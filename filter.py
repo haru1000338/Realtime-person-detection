@@ -111,26 +111,8 @@ def process_frame(model, img, conf_threshold, tile_size=640, overlap=320, iou_th
     # 画像のコントラストと明るさを調整
     img = adjust_contrast_brightness(img, contrast=1.0, brightness=0)
 
-    # 画像をタイルに分割
-    tiles = split_image(img, tile_size, overlap)
-
-    # 各タイルを処理
-    all_results = []
-    for tile, x_offset, y_offset in tiles:
-        # タイルで推論
-        results = process_tile(model, tile, conf_threshold)
-        for x0, y0, x1, y1, score in results:
-            all_results.append((x0 + x_offset, y0 + y_offset, x1 + x_offset, y1 + y_offset, score))
-
-    # Soft NMSを適用して重複を除去
-    if len(all_results) > 0:
-        boxes = np.array([[r[0], r[1], r[2], r[3]] for r in all_results])
-        scores = np.array([r[4] for r in all_results])
-        keep = apply_soft_nms(boxes, scores, iou_thresh=iou_threshold)
-
-        final_results = [all_results[i] for i in keep]
-    else:
-        final_results = []
+    # フレーム全体を1回だけ推論する
+    final_results = process_tile(model, img, conf_threshold)
 
     # 結果をオリジナル画像に描画
     for x0, y0, x1, y1, score in final_results:
