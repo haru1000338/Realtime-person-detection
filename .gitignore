@@ -35,6 +35,8 @@ ENV/
 *.pt
 *.onnx
 yolo*.pt
+test_movie/
+
 
 # Output and logs
 runs/
