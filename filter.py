@@ -1,4 +1,8 @@
 import cv2
+import numpy as np
+from collections import defaultdict
+
+track_history = defaultdict(lambda: [])  # トラッキングIDごとの足跡を保存する辞書
 
 def adjust_contrast_brightness(img, contrast=1.0, brightness=0):
     """コントラストと明るさを調整"""
@@ -26,6 +30,16 @@ def process_frame(model, img, conf_threshold=0.5):
                 
                 # 結果に track_id も含めて返す
                 processed_results.append((x0, y0, x1, y1, score, track_id))
+
+                foot_x = int((x0 + x1) / 2)
+                foot_y = int(y1)
+
+                track_history[track_id].append((foot_x, foot_y))
+                if len(track_history[track_id]) > 30:
+                    track_history[track_id].pop(0)
+                points = np.array(track_history[track_id], dtype=np.int32).reshape(-1, 1, 2)
+                cv2.polylines(img, [points], isClosed=False, color=(0, 0, 255), thickness=3)
+
 
                 # 画像に枠と「ID」を描画
                 color = (0, 255, 0)
