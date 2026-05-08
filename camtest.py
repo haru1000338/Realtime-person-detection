@@ -24,6 +24,7 @@ def main():
     target_frame_ms = 1000.0 / target_fps if target_fps and target_fps > 0 else None
     prev_display_time = None
 
+    show_metrics = False  # FPSや処理時間を表示するかどうか
     try:
         while True:
             # 2. カメラから1フレームを読み込む
@@ -50,23 +51,27 @@ def main():
 
             # 4. 検出件数とFPSを表示する
             overlay = annotated_frame.copy()
-            y = 30
-            cv2.putText(overlay, f"Detections: {len(results)}", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
-            y += 40
-            cv2.putText(overlay, f"Process: {processing_ms:.1f} ms", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            y += 40
-            cv2.putText(overlay, f"Loop: {frame_ms:.1f} ms", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-            y += 40
-            cv2.putText(overlay, f"FPS: {actual_fps:.1f}", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            y += 40
-            if target_frame_ms is not None:
-                cv2.putText(overlay, f"Lag vs camera: {lag_ms:.1f} ms", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+            if show_metrics:
+                y = 30
+                cv2.putText(overlay, f"Persons: {len(results)}", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+                y += 40
+                cv2.putText(overlay, f"Process: {processing_ms:.1f} ms", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                y += 40
+                cv2.putText(overlay, f"Loop: {frame_ms:.1f} ms", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+                y += 40
+                cv2.putText(overlay, f"FPS: {actual_fps:.1f}", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                y += 40
+                if target_frame_ms is not None:
+                    cv2.putText(overlay, f"Lag vs camera: {lag_ms:.1f} ms", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
             cv2.imshow("Webcam + Filter", overlay)
 
             # 5. 'q' で終了
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+            elif cv2.waitKey(1) & 0xFF == ord('i'):
+                show_metrics = not show_metrics
+
     finally:
         cap.release()
         cv2.destroyAllWindows()
