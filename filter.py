@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from collections import defaultdict
 
-track_history = defaultdict(lambda: [])  # トラッキングIDごとの足跡を保存する辞書
+track_history = defaultdict(list)  # トラッキングIDごとの足跡を保存する辞書
 
 def adjust_contrast_brightness(img, contrast=1.0, brightness=0):
     """コントラストと明るさを調整"""
