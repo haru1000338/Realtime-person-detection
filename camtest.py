@@ -7,10 +7,10 @@ from filter import process_frame
 def main():
     # ============ 入力ソースの選択 ============
     # カメラを使う場合はこちらをコメント解除
-    # VIDEO_SOURCE = 0
+    VIDEO_SOURCE = 0
     
     # 動画ファイルを使う場合はこちらをコメント解除
-    VIDEO_SOURCE = "test_movie/"  # testする動画ファイルを指定
+    # VIDEO_SOURCE = "test_movie/"  # testする動画ファイルを指定
     
     # 1. モデルとカメラの準備
     model = YOLO("yolo26n.pt")
