@@ -38,7 +38,7 @@ class HeatmapGenerator:
         heatmap_colored = cv2.applyColorMap(heatmap_normalized, cv2.COLORMAP_JET)
 
         # 熱がある部分だけマスクを作成
-        mask = heatmap_normalized > 5  # 閾値は調整可能
+        mask = heatmap_normalized > 1  # 閾値は調整可能
         mask_3d = mask[:, :, np.newaxis]  # 3チャンネル用に次元を追加
 
         # 元の画像とヒートマップを合成
