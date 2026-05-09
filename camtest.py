@@ -4,11 +4,16 @@ from ultralytics import YOLO
 
 from filter import process_frame
 from heatmap import HeatmapGenerator
+from logger import DataLogger
 
 def main():
     # ============ 入力ソースの選択 ============
     # カメラを使う場合はこちらをコメント解除
     VIDEO_SOURCE = 0
+
+    heatmap_generator = HeatmapGenerator()
+    # データロガーの初期化
+    data_logger = DataLogger()
     
     # 動画ファイルを使う場合はこちらをコメント解除
     # VIDEO_SOURCE = "test_movie/"  # testする動画ファイルを指定
@@ -21,7 +26,6 @@ def main():
         print("入力ソースを開けませんでした。")
         return
     
-    heatmap_generator = HeatmapGenerator()
 
     target_fps = cap.get(cv2.CAP_PROP_FPS)
     target_frame_ms = 1000.0 / target_fps if target_fps and target_fps > 0 else None
@@ -40,7 +44,7 @@ def main():
             capture_time = time.perf_counter()
 
             # 3. filter.py の処理結果をフレームに重ねる
-            annotated_frame, results = process_frame(model, frame, heatmap_generator, conf_threshold=0.6)
+            annotated_frame, results = process_frame(model, frame, heatmap_generator, data_logger, conf_threshold=0.6)
 
             display_time = time.perf_counter()
             processing_ms = (display_time - capture_time) * 1000.0

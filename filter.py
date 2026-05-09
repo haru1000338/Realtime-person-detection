@@ -10,7 +10,7 @@ def adjust_contrast_brightness(img, contrast=1.0, brightness=0):
     """コントラストと明るさを調整"""
     return cv2.convertScaleAbs(img, alpha=contrast, beta=brightness)
 
-def process_frame(model, img, heatmap_generator, conf_threshold=0.5):
+def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5):
     """1フレームの画像を受け取り、追跡（トラッキング）と描画を行う"""
     img = adjust_contrast_brightness(img, contrast=1.0, brightness=0)
 
@@ -18,6 +18,9 @@ def process_frame(model, img, heatmap_generator, conf_threshold=0.5):
     results = model.track(img, conf=conf_threshold, persist=True, tracker="bytetrack.yaml", verbose=False)
     processed_results = []
     current_foot_positions = []  # 現在のフレームでの足の位置を保存するリスト
+
+    current_ids_in_roi = set()  # 現在ROI内にいるIDの集合
+
 
     if results[0].boxes.id is not None:
         boxes = results[0].boxes.xyxy.cpu().numpy()
@@ -61,12 +64,11 @@ def process_frame(model, img, heatmap_generator, conf_threshold=0.5):
                 dwell_time = 0.0
 
                 if is_inside_roi:
+                    current_ids_in_roi.add(track_id)
+
                     if track_id not in entry_times:
                         entry_times[track_id] = time.time()
                     dwell_time = time.time() - entry_times[track_id]
-                else:
-                    if track_id in entry_times:
-                        del entry_times[track_id]
 
                 # 画像に枠と「ID」を描画
                 color = (0, 255, 0)
@@ -79,5 +81,13 @@ def process_frame(model, img, heatmap_generator, conf_threshold=0.5):
 
                 cv2.rectangle(img, (x0, y0), (x1, y1), color, 2)
                 cv2.putText(img, text, (x0, y0 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+
+    lost_ids = list(set(entry_times.keys()) - current_ids_in_roi)
+
+    for lost_id in lost_ids:
+        final_dwell_time = time.time() - entry_times[lost_id]
+        data_logger.record_exit(lost_id, final_dwell_time)
+
+        del entry_times[lost_id]
 
     return img, processed_results
