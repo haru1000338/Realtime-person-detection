@@ -44,7 +44,7 @@ def main():
             capture_time = time.perf_counter()
 
             # 3. filter.py の処理結果をフレームに重ねる
-            annotated_frame, results = process_frame(model, frame, heatmap_generator, data_logger, conf_threshold=0.6)
+            annotated_frame, results = process_frame(model, frame, heatmap_generator, data_logger, conf_threshold=0.6, )
 
             display_time = time.perf_counter()
             processing_ms = (display_time - capture_time) * 1000.0

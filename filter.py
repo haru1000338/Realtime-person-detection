@@ -4,7 +4,15 @@ from collections import defaultdict
 import time
 
 track_history = defaultdict(list)  # トラッキングIDごとの足跡を保存する辞書
-entry_times = {}  # トラッキングIDごとの入場時間を保存する辞書
+active_trackers = {}  # { ID: {Booth_name: str}, 'entry_time': float } }
+exit_candidates = {}  # { ID: {booth_name: str, exit_time: float} } 
+BUFFER_TIME = 3.0  # 退出と判断するまでの猶予時間（秒）
+
+# ({左上}, {右上}, {右下}, {左下}) の順でブースのポリゴンを定義
+BOOTHS = {
+    "Booth_A": np.array([[0, 0], [640, 0], [640, 360], [0, 360]], np.int32),  # 左上のブース
+    "Booth_B": np.array([[0, 360], [640, 360], [640, 720], [0, 720]], np.int32)   # 右下のブース
+}
 
 def adjust_contrast_brightness(img, contrast=1.0, brightness=0):
     """コントラストと明るさを調整"""
@@ -36,8 +44,10 @@ def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5
     
     img = heatmap_generator.apply(img, current_foot_positions)
 
-    roi_x1, roi_y1 = 0, int(img.shape[0] * 0.5)
-    roi_x2, roi_y2 = img.shape[1], img.shape[0]
+    for booth_name, pts in BOOTHS.items():
+        cv2.polylines(img, [pts], isClosed=True, color=(255, 0, 0), thickness=2)
+        text_x, text_y = pts[0][0], pts[0][1]
+        cv2.putText(img, booth_name, (text_x + 5, text_y + 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
 
     # 誰かが検出され、かつIDが割り振られている場合のみ処理
     if results[0].boxes.id is not None:
@@ -60,34 +70,64 @@ def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5
                 points = np.array(track_history[track_id], dtype=np.int32).reshape(-1, 1, 2)
                 cv2.polylines(img, [points], isClosed=False, color=(0, 0, 255), thickness=3)
 
-                is_inside_roi = (roi_x1 <= foot_x <= roi_x2) and (roi_y1 <= foot_y <= roi_y2)
+                current_booth = None
+                for booth_name, pts in BOOTHS.items():
+                    is_inside = cv2.pointPolygonTest(pts, (foot_x, foot_y), False)
+                    if is_inside >= 0:
+                        current_booth = booth_name
+                        break
+
                 dwell_time = 0.0
 
-                if is_inside_roi:
-                    current_ids_in_roi.add(track_id)
+                if current_booth:
+                    # 記録がないorブース移動時
+                    if (track_id not in active_trackers) or active_trackers[track_id]['Booth_name'] != current_booth:
+                        active_trackers[track_id] = {
+                            'Booth_name': current_booth, 
+                            'entry_time': time.time()
+                        }
+                    
+                    if track_id in exit_candidates:
+                        del exit_candidates[track_id]
 
-                    if track_id not in entry_times:
-                        entry_times[track_id] = time.time()
-                    dwell_time = time.time() - entry_times[track_id]
+                    dwell_time = time.time() - active_trackers[track_id]['entry_time']
 
                 # 画像に枠と「ID」を描画
-                color = (0, 255, 0)
+                color = (0, 0, 255) if current_booth else (0, 255, 0)
                 text = f'ID:{track_id} ({score:.2f})'
 
-                if is_inside_roi:
-                    color = (0, 0, 255)
-                    text += f' {dwell_time:.1f}sec'
+                if current_booth:
+                    text += f'{current_booth} {dwell_time:.1f}sec'
 
 
                 cv2.rectangle(img, (x0, y0), (x1, y1), color, 2)
                 cv2.putText(img, text, (x0, y0 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
 
-    lost_ids = list(set(entry_times.keys()) - current_ids_in_roi)
+# ==========================================
+#  退出処理（バッファ付きクリーンアップ）
+# ==========================================
+    current_time = time.time()
 
-    for lost_id in lost_ids:
-        final_dwell_time = time.time() - entry_times[lost_id]
-        data_logger.record_exit(lost_id, final_dwell_time)
+    for track_id in list(active_trackers.keys()):
+        if track_id not in current_ids_in_roi:
+            if track_id not in exit_candidates:
+                exit_candidates[track_id] = {
+                    'booth_name': active_trackers[track_id]['Booth_name'],
+                    'entry_time': active_trackers[track_id]['entry_time'],
+                    'lost_time': current_time
+                }
+                
+    for track_id in list(exit_candidates.keys()):
+        lost_duration = current_time - exit_candidates[track_id]['lost_time']
 
-        del entry_times[lost_id]
+        if lost_duration > BUFFER_TIME:
+            booth_name = exit_candidates[track_id]['booth_name']
+            final_dwell_time = current_time - exit_candidates[track_id]['entry_time']
+
+            data_logger.record_exit(track_id, final_dwell_time, booth_name)
+
+            if track_id in active_trackers:
+                del active_trackers[track_id]
+            del exit_candidates[track_id]
 
     return img, processed_results
