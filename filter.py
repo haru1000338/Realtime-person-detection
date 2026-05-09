@@ -10,8 +10,8 @@ BUFFER_TIME = 3.0  # 退出と判断するまでの猶予時間（秒）
 
 # ({左上}, {右上}, {右下}, {左下}) の順でブースのポリゴンを定義
 BOOTHS = {
-    "Booth_A": np.array([[0, 0], [640, 0], [640, 360], [0, 360]], np.int32),  # 左上のブース
-    "Booth_B": np.array([[0, 360], [640, 360], [640, 720], [0, 720]], np.int32)   # 右下のブース
+    "Booth_A": np.array([[0, 0], [320, 0], [320, 720], [0, 720]], np.int32),  # 左上のブース
+    "Booth_B": np.array([[320, 0], [640, 0], [640, 720], [320, 720]], np.int32)   # 右下のブース
 }
 
 def adjust_contrast_brightness(img, contrast=1.0, brightness=0):
