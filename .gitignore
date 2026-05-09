@@ -42,6 +42,8 @@ test_movie/
 runs/
 logs/
 *.log
+*.csv
+
 
 # OS
 .DS_Store
