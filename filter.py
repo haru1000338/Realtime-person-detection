@@ -37,6 +37,7 @@ def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5
 
         for box, track_id, cls in zip(boxes, ids, classes):
             if int(cls) == 0:  # personクラスのみ
+                current_ids_in_roi.add(track_id)
                 x0, y0, x1, y1 = map(int, box)
                 foot_x = int((x0 + x1) / 2)
                 foot_y = int(y1)
@@ -79,13 +80,40 @@ def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5
 
                 dwell_time = 0.0
 
+                # if current_booth:
+                #     # 記録がないorブース移動時
+                #     if (track_id not in active_trackers) or active_trackers[track_id]['Booth_name'] != current_booth:
+                #         active_trackers[track_id] = {
+                #             'Booth_name': current_booth, 
+                #             'entry_time': time.time()
+                #         }
                 if current_booth:
-                    # 記録がないorブース移動時
-                    if (track_id not in active_trackers) or active_trackers[track_id]['Booth_name'] != current_booth:
+                    # 🌟 置き換えスタート：ブース移動と新規入場の判定
+                    if track_id in active_trackers:
+                        previous_booth = active_trackers[track_id]['Booth_name']
+                        
+                        # パターンA：別のブースへ移動した時！
+                        if previous_booth != current_booth:
+                            dwell_time = time.time() - active_trackers[track_id]['entry_time']
+                            print(f"🔄 [DEBUG] ID:{track_id} が {previous_booth} から {current_booth} へ移動！ (滞在: {dwell_time:.1f}秒)")
+                            
+                            # 🚨 ここで忘れずに古いブースの記録をロガーに渡す！
+                            data_logger.record_exit(track_id, dwell_time, previous_booth)
+                            
+                            # 新しいブースの情報で上書き
+                            active_trackers[track_id] = {
+                                'Booth_name': current_booth, 
+                                'entry_time': time.time()
+                            }
+                    else:
+                        # パターンB：新規入場
+                        print(f"🆕 [DEBUG] ID:{track_id} が {current_booth} に入りました！")
                         active_trackers[track_id] = {
                             'Booth_name': current_booth, 
                             'entry_time': time.time()
                         }
+                    # 🌟 置き換えここまで
+                    
                     
                     if track_id in exit_candidates:
                         del exit_candidates[track_id]
