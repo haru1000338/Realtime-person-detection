@@ -33,6 +33,16 @@ def main():
 
     show_metrics = False  # FPSや処理時間を表示するかどうか
     frame_size_printed = False  # フレームサイズ出力フラグ
+
+    ret, frame = cap.read()
+    if not ret:
+        print("カメラ映像が取得できませんでした。")
+        return
+    height, width = frame.shape[:2]
+    cv2.namedWindow("Webcam + Filter", cv2.WINDOW_KEEPRATIO)
+    cv2.resizeWindow("Webcam + Filter", width, height)
+    print(f"📸 フレームサイズ: {width}x{height}")
+
     try:
         while True:
             # 2. カメラから1フレームを読み込む
@@ -41,12 +51,6 @@ def main():
             if not ret:
                 print("カメラ映像が取得できませんでした。")
                 break
-
-            # フレームサイズを一度だけ出力
-            if not frame_size_printed:
-                height, width = frame.shape[:2]
-                print(f"📸 フレームサイズ: {width}x{height}")
-                frame_size_printed = True
 
             capture_time = time.perf_counter()
 
@@ -78,14 +82,13 @@ def main():
                 if target_frame_ms is not None:
                     cv2.putText(overlay, f"Lag vs camera: {lag_ms:.1f} ms", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
-            cv2.namedWindow("Webcam + Filter", cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
-            cv2.resizeWindow("Webcam + Filter", width, height)
             cv2.imshow("Webcam + Filter", overlay)
 
             # 5. 'q' で終了
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q'):
                 break
-            elif cv2.waitKey(1) & 0xFF == ord('i'):
+            elif key == ord('i'):
                 show_metrics = not show_metrics
 
     finally:
