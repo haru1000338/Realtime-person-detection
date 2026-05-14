@@ -5,16 +5,19 @@ class HeatmapGenerator:
     def __init__(self):
         self.heatmap_accumulator = None
 
-        self.HEAT_ADD = 2.0
+        self.HEAT_ADD = 0.5
         self.HEAT_MAX = 100.0
-        self.DECAY_RATE = 0.98
-        self.RADIUS = 20
+        self.DECAY_RATE = 0.99
+        # self.RADIUS = 20
 
     def apply(self, img, foot_positions):
         """
         画像と現在画面にいる人の座標リストを受け取り、ヒートマップを合成して返す
         """
         h, w = img.shape[:2]
+        radius = int(min(h, w) * 0.03)  # 画面サイズに応じた半径
+        sigma = radius
+
 
         # ヒートマップの初期化
         if self.heatmap_accumulator is None or self.heatmap_accumulator.shape != (h, w):
@@ -24,12 +27,12 @@ class HeatmapGenerator:
         
         # 足の位置にガウシアンを加算
         for (foot_x, foot_y) in foot_positions:
-            cv2.circle(self.heatmap_accumulator, (foot_x, foot_y), radius=self.RADIUS, color=self.HEAT_ADD, thickness=-1)
+            cv2.circle(self.heatmap_accumulator, (foot_x, foot_y), radius=radius, color=self.HEAT_ADD, thickness=-1)
 
         self.heatmap_accumulator = np.clip(self.heatmap_accumulator, 0, self.HEAT_MAX)
 
         # ぼかし処理
-        heatmap_blurred = cv2.GaussianBlur(self.heatmap_accumulator, (0, 0), sigmaX=20, sigmaY=20)
+        heatmap_blurred = cv2.GaussianBlur(self.heatmap_accumulator, (0, 0), sigmaX=sigma, sigmaY=sigma)
 
         # 正規化（0-255の範囲）
         heatmap_normalized = (heatmap_blurred / self.HEAT_MAX * 255).astype(np.uint8)

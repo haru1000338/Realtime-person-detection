@@ -43,6 +43,10 @@ def main():
     cv2.resizeWindow("Webcam + Filter", width, height)
     print(f"📸 フレームサイズ: {width}x{height}")
 
+    # ======
+    print(cap.get(cv2.CAP_PROP_FPS))
+    # ======
+
     try:
         while True:
             # 2. カメラから1フレームを読み込む
