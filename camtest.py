@@ -78,6 +78,8 @@ def main():
                 if target_frame_ms is not None:
                     cv2.putText(overlay, f"Lag vs camera: {lag_ms:.1f} ms", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
+            cv2.namedWindow("Webcam + Filter", cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
+            cv2.resizeWindow("Webcam + Filter", 640, 480)
             cv2.imshow("Webcam + Filter", overlay)
 
             # 5. 'q' で終了
