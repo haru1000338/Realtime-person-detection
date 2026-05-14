@@ -8,10 +8,10 @@ active_trackers = {}  # { ID: {Booth_name: str}, 'entry_time': float } }
 exit_candidates = {}  # { ID: {booth_name: str, exit_time: float} } 
 BUFFER_TIME = 3.0  # 退出と判断するまでの猶予時間（秒）
 
-# ({左上}, {右上}, {右下}, {左下}) の順でブースのポリゴンを定義
-BOOTHS = {
-    "Booth_A": np.array([[0, 0], [320, 0], [320, 720], [0, 720]], np.int32),  # 左上のブース
-    "Booth_B": np.array([[320, 0], [640, 0], [640, 720], [320, 720]], np.int32)   # 右下のブース
+# ({左上}, {右上}, {右下}, {左下}) の順でブースのポリゴンを定義(範囲：0~1)
+BOOTHS_RATE = {
+    "Booth_A": np.array([[0, 0], [0.5, 0], [0.5, 1], [0, 1]], np.float32),  # 左上のブース
+    "Booth_B": np.array([[0.5, 0], [1, 0], [1, 1], [0.5, 1]], np.float32)   # 右下のブース
 }
 
 def adjust_contrast_brightness(img, contrast=1.0, brightness=0):
@@ -21,6 +21,13 @@ def adjust_contrast_brightness(img, contrast=1.0, brightness=0):
 def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5):
     """1フレームの画像を受け取り、追跡（トラッキング）と描画を行う"""
     img = adjust_contrast_brightness(img, contrast=1.0, brightness=0)
+    img_h, img_w = img.shape[:2]
+
+    BOOTHS = {}
+
+    for booth_name, rate_pts in BOOTHS_RATE.items():
+        pixcel_pts = [[int(x * img_w), int(y * img_h)] for x, y in rate_pts]
+        BOOTHS[booth_name] = np.array(pixcel_pts, dtype=np.int32)
 
     # 【魔法の1行】ただの推論ではなく、trackモードでByteTrack（ID追跡）を有効にする
     results = model.track(img, conf=conf_threshold, persist=True, tracker="bytetrack.yaml", verbose=False)

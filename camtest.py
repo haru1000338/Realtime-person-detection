@@ -32,6 +32,7 @@ def main():
     prev_display_time = None
 
     show_metrics = False  # FPSや処理時間を表示するかどうか
+    frame_size_printed = False  # フレームサイズ出力フラグ
     try:
         while True:
             # 2. カメラから1フレームを読み込む
@@ -40,6 +41,12 @@ def main():
             if not ret:
                 print("カメラ映像が取得できませんでした。")
                 break
+
+            # フレームサイズを一度だけ出力
+            if not frame_size_printed:
+                height, width = frame.shape[:2]
+                print(f"📸 フレームサイズ: {width}x{height}")
+                frame_size_printed = True
 
             capture_time = time.perf_counter()
 
