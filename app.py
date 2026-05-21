@@ -15,7 +15,7 @@ def load_data():
         # 1行目がヘッダー文字列だった場合は除外する
         if df.iloc[0]['Timestamp'] == 'Timestamp':
             df = df.iloc[1:]
-        
+
         # 時間を数値に変換
         df['Dwell_Time_sec'] = df['Dwell_Time_sec'].astype(float)
         return df
@@ -28,10 +28,10 @@ df = load_data()
 if not df.empty:
     # 🌟 上段：サマリー情報
     col1, col2 = st.columns(2)
-    
+
     total_visitors = df['Track_ID'].nunique()
     col1.metric("総検知人数", f"{total_visitors} 人")
-    
+
     total_dwell = df['Dwell_Time_sec'].sum()
     col2.metric("総滞在時間", f"{total_dwell:.1f} 秒")
 
@@ -68,3 +68,15 @@ auto_refresh = st.checkbox("自動更新（2秒ごと）", value=True)
 if auto_refresh:
     time.sleep(2)
     st.rerun()
+
+with st.expander("システム詳細(クリックして展開)"):
+    st.markdown("""
+                システムの処理概要
+                1. カメラから映像を取得
+                2. AIモデル(YOLOv26)で人を検出し、足の位置を特定
+                3. 足の位置をもとにヒートマップを生成
+                4. 人の位置と滞在時間をCSVに記録
+                5. StreamlitでCSVを読み込み、ダッシュボードを表示
+                6. ダッシュボードは総検知人数、総滞在時間、ブース別訪問者数、ブース別平均滞在時間を表示
+                7. データは自動で更新され、最新の状態を反映
+                """)

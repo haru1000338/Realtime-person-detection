@@ -35,16 +35,17 @@ class HeatmapGenerator:
         heatmap_blurred = cv2.GaussianBlur(self.heatmap_accumulator, (0, 0), sigmaX=sigma, sigmaY=sigma)
 
         current_max = np.max(heatmap_blurred)
-
         scale_max = max(current_max, self.MIN_MAX_HEAT)
 
-        heatmap_normalized = np.clip((heatmap_blurred / scale_max) * 255, 0, 255).astype(np.uint8)
+        heatmap_log = np.log(heatmap_blurred + 1e-8)  # ゼロ除算を避けるための小さな値を加算
+        scale_max_log = np.log(scale_max + 1e-8)
+        heatmap_normalized = np.clip((heatmap_log / scale_max_log) * 255, 0, 255).astype(np.uint8)
 
         # サーモグラフィー風のカラーマップを適用
         heatmap_colored = cv2.applyColorMap(heatmap_normalized, cv2.COLORMAP_JET)
 
         # 熱がある部分だけマスクを作成
-        mask = heatmap_normalized > 5  # 閾値は調整可能
+        mask = heatmap_normalized > 2  # 閾値は調整可能
         mask_3d = mask[:, :, np.newaxis]  # 3チャンネル用に次元を追加
 
         # 元の画像とヒートマップを合成
