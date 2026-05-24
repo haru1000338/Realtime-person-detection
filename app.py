@@ -32,8 +32,22 @@ if not df.empty:
     total_visitors = df['Track_ID'].nunique()
     col1.metric("総検知人数", f"{total_visitors} 人")
 
-    total_dwell = df['Dwell_Time_sec'].sum()
-    col2.metric("総滞在時間", f"{total_dwell:.1f} 秒")
+    # 【修正箇所】総滞在時間を全体の平均滞在時間（mean）に置き換え
+    avg_dwell = df['Dwell_Time_sec'].mean()
+    col2.metric("全体の平均滞在時間", f"{avg_dwell:.1f} 秒")
+
+    # ブースごとの平均滞在時間を計算して表示
+    avg_by_booth = df.groupby('Booth_name')['Dwell_Time_sec'].mean().reset_index()
+    avg_by_booth['Dwell_Time_sec'] = avg_by_booth['Dwell_Time_sec'].round(1)
+
+    st.subheader("ブース別平均滞在時間（秒）")
+    avg_col1, avg_col2 = st.columns([2, 1])
+    with avg_col1:
+        fig_avg = px.bar(avg_by_booth, x='Booth_name', y='Dwell_Time_sec', color='Booth_name', text='Dwell_Time_sec')
+        fig_avg.update_layout(showlegend=False, yaxis_title='平均滞在時間 (秒)')
+        st.plotly_chart(fig_avg, use_container_width=True)
+    with avg_col2:
+        st.table(avg_by_booth.rename(columns={'Dwell_Time_sec': '平均滞在時間 (秒)'}))
 
     st.markdown("---")
 
@@ -47,10 +61,11 @@ if not df.empty:
         st.plotly_chart(fig_bar, width='stretch')
 
     with col4:
-        st.subheader("ブース別の平均滞在時間（秒）")
-        avg_dwell = df.groupby('Booth_name')['Dwell_Time_sec'].mean().reset_index()
-        fig_pie = px.pie(avg_dwell, values='Dwell_Time_sec', names='Booth_name', hole=0.4)
-        st.plotly_chart(fig_pie, width='stretch')
+        st.subheader("ブース別の滞在時間分布（秒）")
+        # 箱ひげ図で滞在時間の分布（中央値、四分位、外れ値）を表示
+        fig_box = px.box(df, x='Booth_name', y='Dwell_Time_sec', points='outliers', color='Booth_name')
+        fig_box.update_layout(showlegend=False)
+        st.plotly_chart(fig_box, use_container_width=True)
 
     # 🌟 下段：生データ
     st.markdown("---")
@@ -77,6 +92,6 @@ with st.expander("システム詳細(クリックして展開)"):
                 3. 足の位置をもとにヒートマップを生成
                 4. 人の位置と滞在時間をCSVに記録
                 5. StreamlitでCSVを読み込み、ダッシュボードを表示
-                6. ダッシュボードは総検知人数、総滞在時間、ブース別訪問者数、ブース別平均滞在時間を表示
+                6. ダッシュボードは総検知人数、全体の平均滞在時間、ブース別訪問者数、ブース別平均滞在時間を表示
                 7. データは自動で更新され、最新の状態を反映
                 """)
