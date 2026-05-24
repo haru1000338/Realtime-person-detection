@@ -20,7 +20,7 @@ class HeatmapGenerator:
         # `MIN_MAX_HEAT`: 正規化の際に分母が小さくなりすぎないようにする最小値（安定化用）。
         self.MIN_MAX_HEAT = 10.0
 
-    def apply(self, img, foot_positions):
+    def apply(self, img, foot_positions, show=True):
         """
         画像と現在画面にいる人の座標リストを受け取り、ヒートマップを合成して返す
         """
@@ -55,10 +55,12 @@ class HeatmapGenerator:
         mask = heatmap_normalized > 5  # 閾値は調整可能
         mask_3d = mask[:, :, np.newaxis]  # 3チャンネル用に次元を追加
 
-        # 元の画像とヒートマップを合成
-        alpha = 0.6  # ヒートマップの透明度
-        blended = cv2.addWeighted(img, 1 - alpha, heatmap_colored, alpha, 0)
-
-        overlay = np.where(mask_3d, blended, img)
-
-        return overlay
+        # 元の画像とヒートマップを合成（表示が有効な場合のみ）
+        if show:
+            alpha = 0.6  # ヒートマップの透明度
+            blended = cv2.addWeighted(img, 1 - alpha, heatmap_colored, alpha, 0)
+            overlay = np.where(mask_3d, blended, img)
+            return overlay
+        else:
+            # 表示しない場合でも内部累積は更新済みなので、元画像をそのまま返す
+            return img

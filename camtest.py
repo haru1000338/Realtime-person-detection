@@ -33,6 +33,8 @@ def main():
 
     show_metrics = False  # FPSや処理時間を表示するかどうか
     frame_size_printed = False  # フレームサイズ出力フラグ
+    # ヒートマップ表示フラグ（`h` キーで切替）。裏では常にヒートマップを更新する。
+    show_heatmap = True
 
     ret, frame = cap.read()
     if not ret:
@@ -59,7 +61,7 @@ def main():
             capture_time = time.perf_counter()
 
             # 3. filter.py の処理結果をフレームに重ねる
-            annotated_frame, results = process_frame(model, frame, heatmap_generator, data_logger, conf_threshold=0.6, )
+            annotated_frame, results = process_frame(model, frame, heatmap_generator, data_logger, conf_threshold=0.6, show_heatmap=show_heatmap)
 
             display_time = time.perf_counter()
             processing_ms = (display_time - capture_time) * 1000.0
@@ -94,6 +96,9 @@ def main():
                 break
             elif key == ord('i'):
                 show_metrics = not show_metrics
+            elif key == ord('h'):
+                show_heatmap = not show_heatmap
+                print(f"Heatmap display: {'ON' if show_heatmap else 'OFF'}")
 
     finally:
         cap.release()

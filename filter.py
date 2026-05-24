@@ -18,7 +18,7 @@ def adjust_contrast_brightness(img, contrast=1.0, brightness=0):
     """コントラストと明るさを調整"""
     return cv2.convertScaleAbs(img, alpha=contrast, beta=brightness)
 
-def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5):
+def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5, show_heatmap=True):
     """1フレームの画像を受け取り、追跡（トラッキング）と描画を行う"""
     img = adjust_contrast_brightness(img, contrast=1.0, brightness=0)
     img_h, img_w = img.shape[:2]
@@ -50,7 +50,8 @@ def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5
                 foot_y = int(y1)
                 current_foot_positions.append((foot_x, foot_y))
     
-    img = heatmap_generator.apply(img, current_foot_positions)
+    # ヒートマップは常に内部で更新するが、表示は `show_heatmap` によって制御する
+    img = heatmap_generator.apply(img, current_foot_positions, show=show_heatmap)
 
     for booth_name, pts in BOOTHS.items():
         cv2.polylines(img, [pts], isClosed=True, color=(255, 0, 0), thickness=2)
