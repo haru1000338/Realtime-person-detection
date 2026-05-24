@@ -9,7 +9,7 @@ from logger import DataLogger
 def main():
     # ============ 入力ソースの選択 ============
     # カメラを使う場合はこちらをコメント解除
-    VIDEO_SOURCE = 1
+    VIDEO_SOURCE = 0
 
     heatmap_generator = HeatmapGenerator()
     # データロガーの初期化

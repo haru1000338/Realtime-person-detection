@@ -8,7 +8,8 @@ class HeatmapGenerator:
         self.HEAT_ADD = 1.5
         self.HEAT_MAX = 1.0
         self.DECAY_RATE = 0.998
-        # self.RADIUS = 20
+        # 半径係数: 画面対比での円半径。小さくすると表示が細くなる（例: 0.01）。最小1pxを保証。
+        self.RADIUS_FACTOR = 0.005
 
         self.MIN_MAX_HEAT = 10.0
 
@@ -17,7 +18,7 @@ class HeatmapGenerator:
         画像と現在画面にいる人の座標リストを受け取り、ヒートマップを合成して返す
         """
         h, w = img.shape[:2]
-        radius = int(min(h, w) * 0.02)  # 画面サイズに応じた半径
+        radius = max(1, int(min(h, w) * self.RADIUS_FACTOR))  # 画面サイズに応じた半径（最小1px）
         sigma = radius * 1.5
 
 
