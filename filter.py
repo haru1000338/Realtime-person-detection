@@ -3,10 +3,15 @@ import numpy as np
 from collections import defaultdict
 import time
 
+import reid
+
 track_history = defaultdict(list)  # トラッキングIDごとの足跡を保存する辞書
 active_trackers = {}  # { ID: {Booth_name: str}, 'entry_time': float } }
 exit_candidates = {}  # { ID: {booth_name: str, exit_time: float} } 
 BUFFER_TIME = 3.0  # 退出と判断するまでの猶予時間（秒）
+
+person_features = {}
+person_roles = {}
 
 # ({左上}, {右上}, {右下}, {左下}) の順でブースのポリゴンを定義(範囲：0~1)
 BOOTHS_RATE = {
@@ -30,7 +35,7 @@ def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5
         BOOTHS[booth_name] = np.array(pixcel_pts, dtype=np.int32)
 
     # 【魔法の1行】ただの推論ではなく、trackモードでByteTrack（ID追跡）を有効にする
-    results = model.track(img, conf=conf_threshold, persist=True, tracker="bytetrack.yaml", verbose=False)
+    results = model.track(img, conf=conf_threshold, persist=True, tracker="bytetrack.yaml", verbose=False, device="cpu")
     processed_results = []
     current_foot_positions = []  # 現在のフレームでの足の位置を保存するリスト
 
@@ -65,8 +70,39 @@ def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5
         for box, score, track_id, cls in zip(boxes, scores, ids, classes):
             if int(cls) == 0:  # personクラスのみ
                 x0, y0, x1, y1 = map(int, box)
+
+                # 特徴を抽出→IDと特徴を紐づけて保存
+                if track_id not in person_features:
+                    crop_y0, crop_y1 = max(0, y0), min(img_h, y1)
+                    crop_x0, crop_x1 = max(0, x0), min(img_w, x1)
+                    crop_img = img[crop_y0:crop_y1, crop_x0:crop_x1]
+
+                    if crop_img.shape[0] > 0 and crop_img.shape[1] > 10:
+                        new_feature = reid.get_feature(crop_img)
+
+                        best_match_id = None
+                        heighest_score = 0.0
+
+                        for past_id, past_feature in person_features.items():
+                            if past_feature is not None:
+                                similarity = reid.compare_features(new_feature, past_feature)
+                                if similarity > heighest_score:
+                                    heighest_score = similarity
+                                    best_match_id = past_id
+
+                        THRESHOLD = 0.7
+                        if heighest_score > THRESHOLD:
+                            print(f"[Re-ID] ID:{track_id} が過去の ID:{best_match_id} と類似度 {heighest_score:.2f} でマッチ！")
+                            person_roles[track_id] = f"Same as ID:{best_match_id}"
+                        else:
+                            print(f"[Re-ID] ID:{track_id} は新規の人物と判断 (最高類似度 {heighest_score:.2f})")
+                            person_roles[track_id] = f"New Person"
+                        
+                        person_features[track_id] = new_feature
+                    else:
+                        person_features[track_id] = None  # 特徴抽出できない場合はNoneを保存
+                        person_roles[track_id] = "Unknown"
                 
-                # 結果に track_id も含めて返す
                 processed_results.append((x0, y0, x1, y1, score, track_id))
 
                 foot_x = int((x0 + x1) / 2)
@@ -88,13 +124,6 @@ def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5
 
                 dwell_time = 0.0
 
-                # if current_booth:
-                #     # 記録がないorブース移動時
-                #     if (track_id not in active_trackers) or active_trackers[track_id]['Booth_name'] != current_booth:
-                #         active_trackers[track_id] = {
-                #             'Booth_name': current_booth, 
-                #             'entry_time': time.time()
-                #         }
                 if current_booth:
                     # 🌟 置き換えスタート：ブース移動と新規入場の判定
                     if track_id in active_trackers:
@@ -130,7 +159,8 @@ def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5
 
                 # 画像に枠と「ID」を描画
                 color = (0, 0, 255) if current_booth else (0, 255, 0)
-                text = f'ID:{track_id} ({score:.2f})'
+                role = person_roles.get(track_id, "")
+                text = f'ID:{track_id} {role}'
 
                 if current_booth:
                     text += f'{current_booth} {dwell_time:.1f}sec'
