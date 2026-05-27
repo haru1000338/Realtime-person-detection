@@ -5,7 +5,7 @@ from torchreid.utils import FeatureExtractor
 
 # モデルの準備 (OSNet)
 # RTX 5060 TiのCUDA対応待ちのため、安定動作するCPUモードを強制指定
-device = 'cpu'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f"Using device: {device}")
 extractor = FeatureExtractor(model_name='osnet_x1_0', device=device)
 

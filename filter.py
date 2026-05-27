@@ -35,7 +35,7 @@ def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5
         BOOTHS[booth_name] = np.array(pixcel_pts, dtype=np.int32)
 
     # 【魔法の1行】ただの推論ではなく、trackモードでByteTrack（ID追跡）を有効にする
-    results = model.track(img, conf=conf_threshold, persist=True, tracker="bytetrack.yaml", verbose=False, device="cpu")
+    results = model.track(img, conf=conf_threshold, persist=True, tracker="bytetrack.yaml", verbose=False)
     processed_results = []
     current_foot_positions = []  # 現在のフレームでの足の位置を保存するリスト
 
