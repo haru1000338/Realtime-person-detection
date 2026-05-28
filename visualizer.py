@@ -26,10 +26,10 @@ class Visualizer:
                 cv2.polylines(output, [points], isClosed=False, color=(0, 0, 255), thickness=3)
 
             text = label
-            if status:
-                text += f" {status}"
+            # if status:
+            #     text += f" {status}"
             if current_booth:
-                text += f" {current_booth} {dwell_time:.1f}sec"
+                text += f" {dwell_time:.1f}sec"
 
             cv2.rectangle(output, (x0, y0), (x1, y1), color, 2)
             cv2.putText(output, text, (x0, y0 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
