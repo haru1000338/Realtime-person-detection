@@ -2,7 +2,7 @@ import cv2
 import time
 from ultralytics import YOLO
 
-from filter import process_frame
+from filter import process_frame, id_manager
 from heatmap import HeatmapGenerator
 from logger import DataLogger
 
@@ -101,6 +101,7 @@ def main():
                 print(f"Heatmap display: {'ON' if show_heatmap else 'OFF'}")
 
     finally:
+        id_manager.save_features()
         cap.release()
         cv2.destroyAllWindows()
 
