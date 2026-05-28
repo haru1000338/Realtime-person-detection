@@ -160,11 +160,17 @@ def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5
                 # 画像に枠と「ID」を描画
                 color = (0, 0, 255) if current_booth else (0, 255, 0)
                 role = person_roles.get(track_id, "")
-                text = f'ID:{track_id} {role}'
 
                 if current_booth:
-                    text += f'{current_booth} {dwell_time:.1f}sec'
-
+                    # 赤い枠（ブース内）の上に表示するテキストを限定する：ID, sameID, time
+                    parts = [f'ID:{track_id}']
+                    if role and role.startswith("Same as ID:"):
+                        parts.append(role)
+                    parts.append(f'{dwell_time:.1f}sec')
+                    text = ' '.join(parts)
+                else:
+                    # ブース外は従来どおり ID と role を表示
+                    text = f'ID:{track_id} {role}'
 
                 cv2.rectangle(img, (x0, y0), (x1, y1), color, 2)
                 cv2.putText(img, text, (x0, y0 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
