@@ -43,15 +43,24 @@ class IDManager:
                     best_score = score
                     matched_real_id = real_id
 
+# --- ⭕ 修正後（EMAブレンドの実装） ---
+        ALPHA = 0.9  # 過去の記憶をどれくらい信じるか
+        
         if matched_real_id is not None and best_score >= self.similarity_threshold:
             real_id = matched_real_id
             status = f"matched:{best_score:.2f}"
+            
+            # 🌟 追加：姿勢の変化に追従するため、既存の特徴量と新しい特徴量をブレンドする
+            if feature is not None:
+                past_feat = self.real_id_features[real_id]
+                self.real_id_features[real_id] = (past_feat * ALPHA) + (feature * (1.0 - ALPHA))
+                
         else:
             real_id = self._generate_real_id()
             status = "new"
+            # 新規人物の場合はそのまま登録
+            if feature is not None:
+                self.real_id_features[real_id] = feature
 
         self.track_to_real_id[track_id] = real_id
-        if feature is not None and real_id not in self.real_id_features:
-            self.real_id_features[real_id] = feature
-
         return IDMatchResult(real_id=real_id, status=status, label=f"ID:{track_id} Real:{real_id}")
