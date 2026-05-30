@@ -21,7 +21,7 @@ class IDManager:
         self.staff_path = staff_path
 
         self.track_to_real_id = {}
-        self.staff_featrues = {}
+        self.staff_features = {}
         self.active_visitors = {}
         self.archived_visitors = {}
         self.last_seen = {}
@@ -64,7 +64,7 @@ class IDManager:
         # スタッフの特徴量を読み込む（存在する場合）
         if os.path.exists(self.staff_path):
             try:
-                self.staff_featrues = torch.load(self.staff_path)
+                self.staff_features = torch.load(self.staff_path)
                 print(f"👔 スタッフの特徴量を {self.staff_path} から読み込みました。")
             except Exception as e:
                 print(f"⚠️ スタッフの特徴量ファイルの読み込みに失敗しました: {self.staff_path}")
@@ -91,7 +91,7 @@ class IDManager:
                 "next_real_id": self.next_real_id,
             }
             torch.save(visitor_data, self.visitor_path)
-            torch.save(self.staff_featrues, self.staff_path)
+            torch.save(self.staff_features, self.staff_path)
             print(f"👔 スタッフの特徴量を {self.staff_path} に保存しました。")
         except Exception as e:
             print(f"⚠️ スタッフの特徴量ファイルの保存に失敗しました: {self.staff_path}")
@@ -122,8 +122,8 @@ class IDManager:
         matched_staff_id = None
         best_score = 0.0
 
-        for real_id, staff_feat in self.staff_featrues.items():
-            score = reid.compare_featrues(feature, staff_feat)
+        for real_id, staff_feat in self.staff_features.items():
+            score = reid.compare_features(feature, staff_feat)
             if score > best_score:
                 best_score = score
                 matched_staff_id = real_id
