@@ -5,46 +5,48 @@ import torch
 
 import reid
 
-
 @dataclass
 class IDMatchResult:
     real_id: str
     status: str
     label: str
 
-
 class IDManager:
-    def __init__(self, similarity_threshold=0.6, timeout_seconds=1800, visitor_path="visitor_features.pt", staff_path="staff_features.pt"):
+    def __init__(self, similarity_threshold=0.70, timeout_seconds=1800, visitor_path="visitor_features.pt", staff_path="staff_features.pt"):
+        # 🎯 判定のライン（これを超えたら同一人物）
         self.similarity_threshold = similarity_threshold
+        
+        # 🎯 多様性フィルター（これ以上似ていたら辞書に追加しない）
+        self.diversity_threshold = 0.90 
+        
+        # 🎯 1人あたりが保持する特徴量の最大数（プールサイズ）
+        self.MAX_POOL_SIZE = 5 
+        
+        # 🎯 カメラに入ってから特徴量計算を待つフレーム数（エッジ見切れ回避）
+        self.WAIT_FRAMES = 5 
+
         self.timeout_seconds = timeout_seconds
         self.visitor_path = visitor_path
         self.staff_path = staff_path
 
-        self.track_to_real_id = {}
-        self.staff_features = {}
-        self.active_visitors = {}
+        # 辞書の中身は Tensor ではなく List[Tensor] になります
+        self.staff_features = {}   # { "S001": [feat1, feat2, ...] }
+        self.active_visitors = {}  # { "R001": [feat1, feat2, ...] }
         self.archived_visitors = {}
-        self.last_seen = {}
         
-        # 🌟 NEW: トラックIDごとの生存フレーム数を記録する辞書
+        self.track_to_real_id = {}
+        self.last_seen = {}
         self.track_age = {}
-        # 🌟 NEW: 特徴量を抽出するまでに待つフレーム数（30FPSなら5フレームは約0.16秒）
-        self.WAIT_FRAMES = 5
-
         self.next_real_id = 1
-        self.TOO_SIMILAR_THRESHOLD = 0.90
-        self.ALPHA = 0.9
     
         self.load_features()
 
     def _generate_real_id(self):
-        """来場者用のユニークIDを生成"""
         real_id = f"R{self.next_real_id:03d}"
         self.next_real_id += 1
         return real_id
     
     def _clean_expired_sessions(self, current_time):
-        """一定時間見かけないIDをアーカイブする"""
         expired_ids = []
         for real_id, last_time in self.last_seen.items():
             if real_id in self.active_visitors:
@@ -55,8 +57,7 @@ class IDManager:
         for real_id, last_time in expired_ids:
             if real_id in self.active_visitors:
                 self.archived_visitors[real_id] = self.active_visitors.pop(real_id)
-                print(f"🕒 ID {real_id} をアーカイブしました（最後の確認: {time.ctime(last_time)}）")
-            # track_age のお掃除
+                print(f"🕒 ID {real_id} をアーカイブ（プール消去）しました。")
             keys_to_delete = [tid for tid, rid in self.track_to_real_id.items() if rid == real_id]
             for k in keys_to_delete:
                 self.track_age.pop(k, None)
@@ -64,12 +65,16 @@ class IDManager:
 
     def load_features(self):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        
         if os.path.exists(self.staff_path):
             try:
-                self.staff_features = torch.load(self.staff_path)
+                loaded_staff = torch.load(self.staff_path)
+                # 互換性対応: 古いデータ(Tensor単体)ならListに変換して読み込む
+                for k, v in loaded_staff.items():
+                    self.staff_features[k] = v if isinstance(v, list) else [v]
                 print(f"👔 スタッフの特徴量を {self.staff_path} から読み込みました。")
             except Exception as e:
-                print(f"⚠️ スタッフの特徴量ファイルの読み込みに失敗しました: {self.staff_path}")
+                print(f"⚠️ スタッフの特徴量読み込み失敗: {e}")
 
         if os.path.exists(self.visitor_path):
             try:
@@ -80,7 +85,7 @@ class IDManager:
                 self.next_real_id = checkpoint.get("next_real_id", 1)
                 print(f"👥 来場者の特徴量を {self.visitor_path} から読み込みました。")
             except Exception as e:
-                print(f"⚠️ 来場者の特徴量ファイルの読み込みに失敗しました: {self.visitor_path}")
+                print(f"⚠️ 来場者の特徴量読み込み失敗: {e}")
 
     def save_features(self):
         try:
@@ -92,97 +97,97 @@ class IDManager:
             }
             torch.save(visitor_data, self.visitor_path)
             torch.save(self.staff_features, self.staff_path)
-            print(f"👔 スタッフの特徴量を {self.staff_path} に保存しました。")
         except Exception as e:
-            print(f"⚠️ 特徴量ファイルの保存に失敗しました。")
+            print(f"⚠️ 特徴量ファイルの保存に失敗しました: {e}")
+
+    # --- 🌟 NEW: プール内総当たり検索メソッド ---
+    def _find_best_match(self, query_feat, pool_dict):
+        """辞書の中の「すべての姿」と総当たり戦を行い、最高スコアを返す"""
+        best_id = None
+        best_score = 0.0
+        for person_id, feature_list in pool_dict.items():
+            for stored_feat in feature_list:
+                score = reid.compare_features(query_feat, stored_feat)
+                if score > best_score:
+                    best_score = score
+                    best_id = person_id
+        return best_id, best_score
 
     def resolve(self, track_id, crop_img):
         current_time = time.time()
         self._clean_expired_sessions(current_time)
 
-        # 🌟 1. トラック年齢の更新と、仮IDの発行
+        # トラック年齢の更新と仮IDの発行
         if track_id not in self.track_age:
             self.track_age[track_id] = 1
-            temp_id = self._generate_real_id()
-            self.track_to_real_id[track_id] = temp_id
+            self.track_to_real_id[track_id] = self._generate_real_id()
         else:
             self.track_age[track_id] += 1
 
         real_id = self.track_to_real_id[track_id]
 
-        # すでにスタッフとして昇格済みの場合は、再計算せずにそのまま返す
-        if real_id.startswith("S"):
-            self.last_seen[real_id] = current_time
-            return IDMatchResult(real_id=real_id, status="staff", label=f"ID:{track_id} Real:{real_id}")
-
-        # 🌟 2. 待機期間（ロスタイム）の処理
+        # 🌟 待機期間（ロスタイム）の処理
         if self.track_age[track_id] < self.WAIT_FRAMES:
-            # まだ指定フレームに達していないので、重い特徴量計算（OSNet）はサボる
             self.last_seen[real_id] = current_time
-            return IDMatchResult(real_id=real_id, status="waiting", label=f"ID:{track_id} Real:{real_id}")
+            # すでにスタッフ昇格済みの場合は青枠を維持
+            status = "staff" if real_id.startswith("S") else "waiting"
+            return IDMatchResult(real_id=real_id, status=status, label=f"ID:{track_id} Real:{real_id}")
 
-        # 🌟 3. 待機明け：全身が映った（はずの）綺麗な画像で特徴量抽出
+        # 🌟 待機明け：特徴量抽出
         feature = None
         if crop_img is not None and crop_img.shape[0] > 0 and crop_img.shape[1] > 10:
             feature = reid.get_feature(crop_img)
 
         if feature is None:
             self.last_seen[real_id] = current_time
-            return IDMatchResult(real_id=real_id, status="Unknown", label=f"ID:{track_id} Real:{real_id}")
+            status = "staff" if real_id.startswith("S") else "Unknown"
+            return IDMatchResult(real_id=real_id, status=status, label=f"ID:{track_id} Real:{real_id}")
 
-        # 🌟 4. スタッフ認証（動的ID昇格テスト）
-        matched_staff_id = None
-        best_score = 0.0
+        # ==========================================
+        # 1. スタッフ辞書との照合 ＆ 動的昇格 ＆ プール更新
+        # ==========================================
+        matched_s_id, s_score = self._find_best_match(feature, self.staff_features)
+        
+        # 自身がすでにスタッフの場合の自己再評価も含む
+        if matched_s_id is not None and s_score >= self.similarity_threshold:
+            if not real_id.startswith("S"):
+                print(f"🔄 ID昇格: トラック {track_id} が スタッフ {matched_s_id} に昇格！（スコア: {s_score:.2f}）")
+                if real_id in self.active_visitors:
+                    del self.active_visitors[real_id]
+                real_id = matched_s_id
+                self.track_to_real_id[track_id] = real_id
 
-        for s_id, staff_feat in self.staff_features.items():
-            score = reid.compare_features(feature, staff_feat)
-            if score > best_score:
-                best_score = score
-                matched_staff_id = s_id
+            # 🌟 スタッフ辞書の更新（アンカー固定 ＋ 多様性フィルター）
+            if s_score < self.diversity_threshold:
+                pool = self.staff_features[real_id]
+                pool.append(feature) # 新しい姿を追加
+                if len(pool) > self.MAX_POOL_SIZE:
+                    pool.pop(1) # ⚠️ インデックス0（マスター）は絶対に消さず、1を消す！
+                print(f"📈 スタッフ {real_id} の辞書が新しい姿を学習しました！(プール数: {len(pool)})")
 
-        if matched_staff_id is not None and best_score >= self.similarity_threshold:
-            # ！！ここで仮の来客IDを捨てて、スタッフIDに昇格させる！！
-            self.track_to_real_id[track_id] = matched_staff_id
-            real_id = matched_staff_id
-            
-            # 昇格した不要な来客IDのゴミデータがあれば消す
-            if real_id in self.active_visitors:
-                del self.active_visitors[real_id]
-                
-            print(f"🔄 ID昇格: トラック {track_id} が スタッフ {real_id} に昇格しました！（スコア: {best_score:.2f}）")
             self.last_seen[real_id] = current_time
             return IDMatchResult(real_id=real_id, status="staff", label=f"ID:{track_id} Real:{real_id}")
-        
-        # 🌟 5. 来客としての処理（EMAブレンド）
-        matched_visitor_id = None
-        best_visitor_score = 0.0
-        for visitor_id, visitor_feat in self.active_visitors.items():
-            if visitor_id == real_id: # 自分自身とは比較しない
-                continue
-            score = reid.compare_features(feature, visitor_feat)
-            if score > best_visitor_score:
-                best_visitor_score = score
-                matched_visitor_id = visitor_id
 
-        if matched_visitor_id is not None and best_visitor_score >= self.TOO_SIMILAR_THRESHOLD:
-            # 過去の来客と完全に一致した場合、仮IDを捨てて過去のIDを引き継ぐ
-            self.track_to_real_id[track_id] = matched_visitor_id
-            real_id = matched_visitor_id
-            self.last_seen[real_id] = current_time
-            status = f"matched:{best_visitor_score:.2f}"
+        # ==========================================
+        # 2. 来客辞書との照合 ＆ プール更新
+        # ==========================================
+        matched_v_id, v_score = self._find_best_match(feature, self.active_visitors)
+
+        if matched_v_id is not None and v_score >= self.similarity_threshold:
+            real_id = matched_v_id
+            self.track_to_real_id[track_id] = real_id
+            status = f"matched:{v_score:.2f}"
             
-        elif matched_visitor_id is not None and best_visitor_score >= self.similarity_threshold:
-            self.track_to_real_id[track_id] = matched_visitor_id
-            real_id = matched_visitor_id
-            past_feat = self.active_visitors[real_id]
-            self.active_visitors[real_id] = ((past_feat * self.ALPHA) + (feature * (1.0 - self.ALPHA)))
-            self.last_seen[real_id] = current_time
-            status = f"matched:{best_visitor_score:.2f}"
-            
+            # 🌟 来客辞書の更新（完全FIFO ＋ 多様性フィルター）
+            if v_score < self.diversity_threshold:
+                pool = self.active_visitors[real_id]
+                pool.append(feature)
+                if len(pool) > self.MAX_POOL_SIZE:
+                    pool.pop(0) # ⚠️ 来客はインデックス0から容赦なく消す（完全FIFO）
         else:
-            # 誰ともマッチしなかった場合、仮発行していたIDを名簿（active_visitors）に正式登録
-            self.active_visitors[real_id] = feature
-            self.last_seen[real_id] = current_time
+            # 誰ともマッチしなかった場合、新しい来客として辞書を作成
             status = "new_visitor"
+            self.active_visitors[real_id] = [feature] # 新規リストとして登録
 
+        self.last_seen[real_id] = current_time
         return IDMatchResult(real_id=real_id, status=status, label=f"ID:{track_id} Real:{real_id}")

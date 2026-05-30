@@ -132,7 +132,7 @@ async def generate_frames(request: Request):
                         staff_dict = id_manager.staff_featrues
                         
                     new_staff_id = f"S{len(staff_dict) + 1:03d}"
-                    staff_dict[new_staff_id] = new_staff_feat
+                    staff_dict[new_staff_id] = [new_staff_feat]
                     id_manager.save_features()
                     print(f"✅ 【登録完了】Webからスタッフ {new_staff_id} を登録しました！")
                 else:
