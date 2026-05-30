@@ -5,6 +5,7 @@ from ultralytics import YOLO
 from filter import process_frame, id_manager
 from heatmap import HeatmapGenerator
 from logger import DataLogger
+import reid
 
 def main():
     # ============ 入力ソースの選択 ============
@@ -100,6 +101,41 @@ def main():
                 show_heatmap = not show_heatmap
                 print(f"Heatmap display: {'ON' if show_heatmap else 'OFF'}")
 
+            elif key == ord('s'):
+                print("🔍 スタッフの特徴量を保存中...")
+                max_area = 0
+                best_crop = None
+
+                staff_results = model(frame, verbose=False)
+                if staff_results[0].boxes is not None:
+                    for box, cls in zip(staff_results[0].boxes.xyxy.cpu().numpy(), staff_results[0].boxes.cls.cpu().numpy()):
+                        if int(cls) == 0:
+                            x0, y0, x1, y1 = map(int, box)
+                            area = (x1 - x0) * (y1 - y0)
+
+                            if area > max_area:
+                                max_area = area
+                                best_crop = frame[y0:y1, x0:x1]
+                
+                if best_crop is not None and best_crop.shape[0] > 0 and best_crop.shape[1] > 10:
+                    new_staff_feat = reid.get_feature(best_crop)
+                    if hasattr(id_manager, 'staff_features'):
+                        staff_dict = id_manager.staff_features
+                    else:
+                        staff_dict = id_manager.staff_features
+                    new_staff_id = f"S{len(staff_dict):03d}"
+                    staff_dict[new_staff_id] = new_staff_feat
+
+                    id_manager.save_features()
+                    print(f"✅ スタッフID {new_staff_id} の特徴量を保存しました。")
+
+                    flash_frame = overlay.copy()
+                    cv2.rectangle(flash_frame, (0, 0), (flash_frame.shape[1], flash_frame.shape[0]), (0, 255, 0), -1)
+                    cv2.imshow("Webcam + Filter", cv2.addWeighted(flash_frame, 0.5, overlay, 0.5, 0))
+                    cv2.waitKey(100)
+                else:
+                    print("⚠️ スタッフの特徴量を保存できませんでした。顔がはっきり写っていることを確認してください。")
+                    
     finally:
         id_manager.save_features()
         cap.release()
