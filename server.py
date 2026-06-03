@@ -2,6 +2,7 @@ import cv2
 import uvicorn
 import asyncio
 import numpy as np
+import time  # 🌟 NEW: FPS計測用に追加
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import StreamingResponse, HTMLResponse, JSONResponse
 from ultralytics import YOLO
@@ -17,6 +18,10 @@ app = FastAPI()
 latest_raw_frame = None
 trigger_register = False  # 🌟 Webボタンが押されたかを判定するフラグ
 
+# 🌟 NEW: UIトグル用のグローバル状態
+show_heatmap_state = True
+show_metrics_state = False
+
 # --- 1. ブラウザに表示するWeb画面（HTML） ---
 html_page = """
 <!DOCTYPE html>
@@ -26,32 +31,62 @@ html_page = """
         <style>
             body { font-family: sans-serif; text-align: center; background-color: #222; color: white; margin: 0; padding: 20px; }
             h2 { color: #00ffcc; }
-            .btn { padding: 15px 30px; font-size: 18px; font-weight: bold; background-color: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 20px; transition: 0.2s; }
-            .btn:hover { background-color: #0056b3; transform: scale(1.05); }
-            .btn:active { background-color: #004085; }
+            .button-group { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+            .btn { padding: 15px 30px; font-size: 16px; font-weight: bold; color: white; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+            .btn-blue { background-color: #007bff; }
+            .btn-blue:hover { background-color: #0056b3; transform: scale(1.05); }
+            .btn-orange { background-color: #ff9800; }
+            .btn-orange:hover { background-color: #e68a00; transform: scale(1.05); }
             img { max-width: 90%; border: 3px solid #555; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+            #status-msg { color: #00ffcc; font-weight: bold; height: 24px; margin-bottom: 10px; }
         </style>
     </head>
     <body>
         <h2>🔴 リアルタイム監視ダッシュボード</h2>
         
-        <button class="btn" onclick="registerStaff()">📸 スタッフ登録 (画面で一番大きい人)</button>
-        <br>
+        <div class="button-group">
+            <button class="btn btn-blue" onclick="registerStaff()">📸 スタッフ登録 (s)</button>
+            <button class="btn btn-orange" onclick="toggleHeatmap()">🔥 ヒートマップ切替 (h)</button>
+            <button class="btn btn-orange" onclick="toggleMetrics()">📊 デバッグ表示切替 (i)</button>
+        </div>
+        
+        <div id="status-msg"></div>
         
         <img src="/video_feed" />
 
         <script>
+            function showMessage(msg) {
+                const el = document.getElementById('status-msg');
+                el.innerText = msg;
+                setTimeout(() => { el.innerText = ''; }, 3000);
+            }
+
             function registerStaff() {
                 fetch('/api/register', { method: 'POST' })
                 .then(response => response.json())
-                .then(data => {
-                    // 登録成功のメッセージをブラウザにポップアップ表示
-                    alert(data.message);
-                })
-                .catch(error => {
-                    alert('通信エラーが発生しました');
-                });
+                .then(data => { showMessage(data.message); })
+                .catch(error => { showMessage('⚠️ 通信エラーが発生しました'); });
             }
+
+            function toggleHeatmap() {
+                fetch('/api/toggle_heatmap', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => { showMessage(data.message); })
+                .catch(error => { showMessage('⚠️ 通信エラーが発生しました'); });
+            }
+
+            function toggleMetrics() {
+                fetch('/api/toggle_metrics', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => { showMessage(data.message); })
+                .catch(error => { showMessage('⚠️ 通信エラーが発生しました'); });
+            }
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 's' || event.key === 'S') registerStaff();
+                if (event.key === 'h' || event.key === 'H') toggleHeatmap();
+                if (event.key === 'i' || event.key === 'I') toggleMetrics();
+            });
         </script>
     </body>
 </html>
@@ -61,14 +96,26 @@ html_page = """
 async def index():
     return HTMLResponse(content=html_page)
 
-# --- 🌟 NEW: Webボタンからの登録指示を受け取るAPI ---
 @app.post("/api/register")
 async def api_register():
     global trigger_register
-    trigger_register = True  # フラグをONにする
-    return JSONResponse(content={"message": "登録処理を受け付けました。画面の枠が青色になれば成功です！"})
+    trigger_register = True
+    return JSONResponse(content={"message": "✅ 登録処理を受け付けました。"})
 
-# --- 映像受信 (WebSocket) ---
+@app.post("/api/toggle_heatmap")
+async def api_toggle_heatmap():
+    global show_heatmap_state
+    show_heatmap_state = not show_heatmap_state
+    state_str = "ON" if show_heatmap_state else "OFF"
+    return JSONResponse(content={"message": f"🔥 ヒートマップ表示を {state_str} にしました。"})
+
+@app.post("/api/toggle_metrics")
+async def api_toggle_metrics():
+    global show_metrics_state
+    show_metrics_state = not show_metrics_state
+    state_str = "ON" if show_metrics_state else "OFF"
+    return JSONResponse(content={"message": f"📊 デバッグ表示を {state_str} にしました。"})
+
 @app.websocket("/ws/upload")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -87,10 +134,14 @@ async def websocket_endpoint(websocket: WebSocket):
 # --- 2. 映像とAI処理を回し続けるエンジン ---
 async def generate_frames(request: Request):
     global latest_raw_frame, trigger_register
+    global show_heatmap_state, show_metrics_state
     
     model = YOLO("yolo26n.pt")
     heatmap_generator = HeatmapGenerator()
     data_logger = DataLogger()
+
+    prev_display_time = time.perf_counter()
+    target_frame_ms = 33.3  # 約30FPSを想定
 
     try:
         while True:
@@ -105,15 +156,16 @@ async def generate_frames(request: Request):
             frame_to_process = latest_raw_frame.copy()
             latest_raw_frame = None 
 
-            # 🌟【復活】Webからスタッフ登録ボタンが押された時の処理
+            frame_start = time.perf_counter()
+            capture_time = time.perf_counter()
+
             if trigger_register:
-                trigger_register = False # フラグを戻す
+                trigger_register = False
                 print("\n📸 Webからスタッフ登録ボタンが押されました！")
                 
                 max_area = 0
                 best_crop = None
                 
-                # YOLOで推論して最大の人物を探す
                 staff_results = model(frame_to_process, verbose=False)
                 if staff_results[0].boxes is not None:
                     for box, cls in zip(staff_results[0].boxes.xyxy.cpu().numpy(), staff_results[0].boxes.cls.cpu().numpy()):
@@ -135,14 +187,35 @@ async def generate_frames(request: Request):
                     staff_dict[new_staff_id] = [new_staff_feat]
                     id_manager.save_features()
                     print(f"✅ 【登録完了】Webからスタッフ {new_staff_id} を登録しました！")
+                    
+                    cv2.rectangle(frame_to_process, (0, 0), (frame_to_process.shape[1], frame_to_process.shape[0]), (0, 255, 0), -1)
                 else:
                     print("⚠️ 人が映っていないか、小さすぎて登録できませんでした。")
 
-            # 通常のAI処理（トラッキングと描画）
-            annotated_frame, _ = process_frame(
+            annotated_frame, results = process_frame(
                 model, frame_to_process, heatmap_generator, data_logger, 
-                conf_threshold=0.6, show_heatmap=False
+                conf_threshold=0.6, show_heatmap=show_heatmap_state
             )
+
+            display_time = time.perf_counter()
+            processing_ms = (display_time - capture_time) * 1000.0
+            frame_ms = (display_time - frame_start) * 1000.0
+            time_diff = display_time - prev_display_time
+            actual_fps = 1.0 / time_diff if time_diff > 0 else 0.0
+            prev_display_time = display_time
+            lag_ms = max(0.0, processing_ms - target_frame_ms)
+
+            if show_metrics_state:
+                y = 30
+                cv2.putText(annotated_frame, f"Persons: {len(results)}", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+                y += 40
+                cv2.putText(annotated_frame, f"Process: {processing_ms:.1f} ms", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                y += 40
+                cv2.putText(annotated_frame, f"Loop: {frame_ms:.1f} ms", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+                y += 40
+                cv2.putText(annotated_frame, f"FPS: {actual_fps:.1f}", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                y += 40
+                cv2.putText(annotated_frame, f"Lag vs camera: {lag_ms:.1f} ms", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
             ret, buffer = cv2.imencode('.jpg', annotated_frame)
             frame_bytes = buffer.tobytes()
