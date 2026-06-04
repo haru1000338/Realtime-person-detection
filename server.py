@@ -23,42 +23,90 @@ show_heatmap_state = True
 show_metrics_state = False
 
 # --- 1. ブラウザに表示するWeb画面（HTML） ---
+# --- 1. ブラウザに表示するWeb画面（HTML） ---
 html_page = """
 <!DOCTYPE html>
 <html>
     <head>
         <title>AI監視ダッシュボード</title>
         <style>
-            body { font-family: sans-serif; text-align: center; background-color: #222; color: white; margin: 0; padding: 20px; }
-            h2 { color: #00ffcc; }
-            .button-group { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-            .btn { padding: 15px 30px; font-size: 16px; font-weight: bold; color: white; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+            /* 画面全体をFlexboxにして高さを100%確保、スクロールバーを隠す */
+            body { 
+                font-family: sans-serif; text-align: center; background-color: #222; color: white; 
+                margin: 0; padding: 20px; box-sizing: border-box;
+                height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+            }
+            h2 { color: #00ffcc; margin-top: 0; flex-shrink: 0; }
+            .button-group { display: flex; justify-content: center; gap: 15px; margin-bottom: 10px; flex-shrink: 0; flex-wrap: wrap; }
+            
+            /* 🌟 追加：スタッフ登録用の管理パネル（初期状態は非表示） */
+            #admin-panel { display: none; margin-bottom: 15px; padding: 10px; background-color: rgba(255,255,255,0.1); border-radius: 8px; }
+
+            .btn { padding: 12px 24px; font-size: 16px; font-weight: bold; color: white; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
             .btn-blue { background-color: #007bff; }
             .btn-blue:hover { background-color: #0056b3; transform: scale(1.05); }
             .btn-orange { background-color: #ff9800; }
             .btn-orange:hover { background-color: #e68a00; transform: scale(1.05); }
-            img { max-width: 90%; border: 3px solid #555; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
-            #status-msg { color: #00ffcc; font-weight: bold; height: 24px; margin-bottom: 10px; }
+            
+            /* 🌟 追加：管理モード切り替えボタン用の地味なデザイン */
+            .btn-gray { background-color: #555; padding: 12px 16px; }
+            .btn-gray:hover { background-color: #777; }
+
+            #status-msg { color: #00ffcc; font-weight: bold; height: 24px; margin-bottom: 10px; flex-shrink: 0; }
+
+            /* 🌟 修正：カメラ映像を限界まで拡大・縮小し、比率を維持するCSS */
+            .video-container {
+                flex-grow: 1; 
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 0; 
+                min-width: 0;
+                width: 100%; /* コンテナも横幅いっぱいまで広げる */
+            }
+            img {
+                width: 100%;  /* 🌟 追加：元のサイズを超えて限界まで拡大させる */
+                height: 100%; /* 🌟 追加：元のサイズを超えて限界まで拡大させる */
+                object-fit: contain; /* 縦横比を完全に維持 */
+                border-radius: 10px;
+                /* 💡 width:100%にしたことで枠線（border）が画面端まで広がってしまうため、
+                   不要な枠線を消して背景に溶け込ませるモダンなスタイルに変更しました */
+            }
         </style>
     </head>
     <body>
         <h2>🔴 リアルタイム監視ダッシュボード</h2>
         
         <div class="button-group">
-            <button class="btn btn-blue" onclick="registerStaff()">📸 スタッフ登録 (s)</button>
             <button class="btn btn-orange" onclick="toggleHeatmap()">🔥 ヒートマップ切替 (h)</button>
             <button class="btn btn-orange" onclick="toggleMetrics()">📊 デバッグ表示切替 (i)</button>
+            <button class="btn btn-gray" onclick="toggleAdminPanel()">⚙️ 管理モード</button>
+        </div>
+
+        <div class="button-group" id="admin-panel">
+            <button class="btn btn-blue" onclick="registerStaff()">📸 スタッフを登録する (s)</button>
         </div>
         
         <div id="status-msg"></div>
         
-        <img src="/video_feed" />
+        <div class="video-container">
+            <img src="/video_feed" />
+        </div>
 
         <script>
+            let adminMode = false; // 管理モードの状態管理
+
             function showMessage(msg) {
                 const el = document.getElementById('status-msg');
                 el.innerText = msg;
                 setTimeout(() => { el.innerText = ''; }, 3000);
+            }
+
+            // 🌟 追加：管理パネルの表示/非表示を切り替える関数
+            function toggleAdminPanel() {
+                adminMode = !adminMode;
+                document.getElementById('admin-panel').style.display = adminMode ? 'flex' : 'none';
+                showMessage(adminMode ? '🔓 管理モードを有効にしました' : '🔒 管理モードを無効にしました');
             }
 
             function registerStaff() {
@@ -83,7 +131,11 @@ html_page = """
             }
 
             document.addEventListener('keydown', function(event) {
-                if (event.key === 's' || event.key === 'S') registerStaff();
+                // 🌟 修正：'s' キーの登録は、管理モードがONの時だけ反応するようにガード
+                if ((event.key === 's' || event.key === 'S') && adminMode) {
+                    registerStaff();
+                }
+                
                 if (event.key === 'h' || event.key === 'H') toggleHeatmap();
                 if (event.key === 'i' || event.key === 'I') toggleMetrics();
             });
