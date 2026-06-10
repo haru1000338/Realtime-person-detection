@@ -48,7 +48,16 @@
 ## 使用方法
 
 本システムは`camera_client.py`、`server.py`、`app.py`の3つのファイルを実行することで動作します。
+
+### Docker環境でのセットアップ方法
+1. Dockerイメージのビルド：`docker compose up -d --build`
+2. コンテナ内に入る：`docker compose exec {サービス名} python server.py`
+3. AIサーバの起動：`python server.py`(ポート:18011)
+4. ダッシュボードの起動：`streamlit run app.py`(ポート:18012)
+5. カメラクライアントの起動：`python camera_client.py`
+
+### ローカル環境でのセットアップ方法
 1. 環境構築：`pip install -r requirements.txt`で必要なライブラリをインストールします。`requirements_torch-cpu.txt`と`requirements_torch-gpu.txt`は、使用する環境に応じてインストールしてください。
-2. サーバの起動：`python server.py`(現状はlocalhost:8000で待機)
+2. サーバの起動：`python server.py`
 3. ダッシュボードの起動：`streamlit run app.py`
 4. カメラクライアントの起動：`python camera_client.py`
