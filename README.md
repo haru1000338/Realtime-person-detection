@@ -72,7 +72,13 @@ streamlit run app.py
 ```
 
 ### 2. カメラクライアント側の起動（ローカル環境）
-物理カメラが接続されているPCで実行します。
+物理カメラが接続されているPCで実行します。`server.py` が起動していることを確認したうえで、`camera_client.py` の接続先をサーバーに合わせてください。また、カメラの接続番号（`VIDEO_SOURCE`）も適宜変更してください。（例: `VIDEO_SOURCE = 0`）
+
+```python
+SERVER_URI = "ws://<サーバーのIPアドレス>:8000/ws/upload"
+```
+
+同じPCでサーバーもカメラも動かす場合は、`ws://localhost:8000/ws/upload` のままで問題ありません。別PCから接続する場合は、サーバーのIPアドレスまたはホスト名に変更してください。
 
 ```bash
 # 1. 必要なライブラリのインストール（初回のみ）
@@ -81,4 +87,4 @@ pip install opencv-python websockets
 # 2. カメラ映像の送信開始
 python camera_client.py
 ```
-*(※ `camera_client.py` 内の WebSocket 接続先 URL が、サーバーの正しいアドレスに設定されていることを確認してください)*
+*(※ `camera_client.py` 内の WebSocket 接続先 URL が、実際に起動しているサーバーのアドレスと一致していることを確認してください)*
