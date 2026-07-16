@@ -12,3 +12,8 @@ lap==0.5.13
 # --- web server & API ---
 fastapi==0.136.0
 uvicorn==0.47.0
+
+# --- ダッシュボード用 ---
+streamlit
+plotly
+pandas
