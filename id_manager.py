@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import os
 import time
 import torch
+import torch.nn.functional as F
 
 import reid
 
@@ -100,18 +101,55 @@ class IDManager:
         except Exception as e:
             print(f"⚠️ 特徴量ファイルの保存に失敗しました: {e}")
 
-    # --- 🌟 NEW: プール内総当たり検索メソッド ---
+   # --- 🌟 NEW: プール内総当たり検索メソッド (行列演算版・最終完成版) ---
     def _find_best_match(self, query_feat, pool_dict):
-        """辞書の中の「すべての姿」と総当たり戦を行い、最高スコアを返す"""
-        best_id = None
-        best_score = 0.0
+        """辞書の中の「すべての姿」と総当たり戦を行い、最高スコアを返す。"""
+        if query_feat is None or not pool_dict:
+            return None, 0.0
+
+        # クエリの基準となるデバイスと型を取得
+        query = query_feat.detach()
+        target_device = query.device
+        target_dtype = query.dtype if query.is_floating_point() else torch.float32
+
+        if query.dim() == 1:
+            query = query.unsqueeze(0)
+
+        # ⚠️ クエリをこの時点で正規化
+        query = F.normalize(query, p=2, dim=1)
+
+        all_feats = []
+        id_mapping = []
+
         for person_id, feature_list in pool_dict.items():
             for stored_feat in feature_list:
-                score = reid.compare_features(query_feat, stored_feat)
-                if score > best_score:
-                    best_score = score
-                    best_id = person_id
-        return best_id, best_score
+                if stored_feat is None:
+                    continue
+                
+                # 💡 Copilot指摘1&2: スタック前にデバイスと型をクエリに合わせる
+                feat = stored_feat.to(device=target_device, dtype=target_dtype)
+                
+                # 💡 Copilot指摘3: 辞書内の特徴量が未正規化の場合に備えた安全策
+                # （本来は保存時に正規化すべきですが、既存データとの互換性のために残します）
+                if feat.dim() == 1:
+                    feat = feat.unsqueeze(0)
+                feat = F.normalize(feat, p=2, dim=1).squeeze(0)
+
+                all_feats.append(feat)
+                id_mapping.append(person_id)
+
+        if not all_feats:
+            return None, 0.0
+
+        # デバイスが統一されているため、安全にスタック可能
+        stacked_feats = torch.stack(all_feats)
+
+        # 行列積による一括計算 (query: [1, 512], stacked_feats.T: [512, N])
+        scores = torch.matmul(query, stacked_feats.T).squeeze(0)
+        
+        best_score_val, best_idx = torch.max(scores, dim=0)
+
+        return id_mapping[best_idx.item()], best_score_val.item()
 
     def resolve(self, track_id, crop_img):
         current_time = time.time()
@@ -133,10 +171,10 @@ class IDManager:
             status = "staff" if real_id.startswith("S") else "waiting"
             return IDMatchResult(real_id=real_id, status=status, label=f"ID:{track_id} Real:{real_id}")
 
-        # 🌟 待機明け：特徴量抽出
         feature = None
         if crop_img is not None and crop_img.shape[0] > 0 and crop_img.shape[1] > 10:
-            feature = reid.get_feature(crop_img)
+            raw_feature = reid.get_feature(crop_img)
+            feature = torch.nn.functional.normalize(raw_feature.unsqueeze(0), p=2, dim=1).squeeze(0)  
 
         if feature is None:
             self.last_seen[real_id] = current_time
