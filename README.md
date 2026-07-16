@@ -1,4 +1,4 @@
-# リアルタイム人物検出と滞在時間分析アプリ
+# リアルタイム人物検出と滞在時間分析アプリ(Track Eye)
 
 ## 開発目的
 
@@ -45,19 +45,40 @@
 - matplotlib：ヒートマップの生成に使用。
 
 
-## 使用方法
+## 使用方法（セットアップと実行）
 
-本システムは`camera_client.py`、`server.py`、`app.py`の3つのファイルを実行することで動作します。
+本システムは、**「AIサーバー（Docker）」**と**「カメラクライアント（ローカル）」**の2つを起動することで動作します。
 
-### Docker環境でのセットアップ方法
-1. Dockerイメージのビルド：`docker compose up -d --build`
-2. コンテナ内に入る：`docker compose exec {サービス名} python server.py`
-3. AIサーバの起動：`python server.py`(ポート:18011)
-4. ダッシュボードの起動：`streamlit run app.py`(ポート:18012)
-5. カメラクライアントの起動：`python camera_client.py`
+### 1. サーバー側の起動（Docker環境推奨）
+NVIDIA GPUを活用したAIサーバーを立ち上げます。サーバーマシン上で以下のコマンドを実行してください。
 
-### ローカル環境でのセットアップ方法
-1. 環境構築：`pip install -r requirements.txt`で必要なライブラリをインストールします。`requirements_torch-cpu.txt`と`requirements_torch-gpu.txt`は、使用する環境に応じてインストールしてください。
-2. サーバの起動：`python server.py`
-3. ダッシュボードの起動：`streamlit run app.py`
-4. カメラクライアントの起動：`python camera_client.py`
+```bash
+# 1. コンテナのビルドとバックグラウンド起動
+docker compose up -d --build
+
+# 2. コンテナ内に入り、AIサーバー(Track Eye)を起動
+docker compose exec [コンテナ名] bash
+python server.py
+# -> 起動後、ブラウザで [https://trackeye.fsmlabo.org/](https://trackeye.fsmlabo.org/) にアクセス
+```
+
+別のターミナルを開き、ダッシュボードも起動します。
+
+```bash
+# 3. ダッシュボードの起動
+docker compose exec [コンテナ名] bash
+streamlit run app.py
+# -> 起動後、ブラウザで [https://trackeye-dashboard.fsmlabo.org/](https://trackeye-dashboard.fsmlabo.org/) にアクセス
+```
+
+### 2. カメラクライアント側の起動（ローカル環境）
+物理カメラが接続されているPCで実行します。
+
+```bash
+# 1. 必要なライブラリのインストール（初回のみ）
+pip install opencv-python websockets
+
+# 2. カメラ映像の送信開始
+python camera_client.py
+```
+*(※ `camera_client.py` 内の WebSocket 接続先 URL が、サーバーの正しいアドレスに設定されていることを確認してください)*
