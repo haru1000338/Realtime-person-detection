@@ -97,7 +97,7 @@ if not df.empty:
                 labels={'訪問者数': '訪問者数 (人)', 'Booth_name': 'ブース名'}
             )
             fig_bar.update_layout(showlegend=False)
-            st.plotly_chart(fig_bar, use_container_width=True)
+            st.plotly_chart(fig_bar, width="stretch")
 
         with chart_col2:
             st.markdown("**📊 ブース別 滞在時間データ (1セッションあたり)**")
@@ -107,7 +107,7 @@ if not df.empty:
             booth_stats['最大滞在時間_秒'] = booth_stats['最大滞在時間_秒'].round(1)
             booth_stats = booth_stats.rename(columns={'Booth_name': 'ブース名'})
             
-            st.dataframe(booth_stats, use_container_width=True, hide_index=True)
+            st.dataframe(booth_stats, width="stretch", hide_index=True)
 
         # 🌟 下段：生データプレビュー
         st.markdown("---")
@@ -115,7 +115,7 @@ if not df.empty:
         display_df = filtered_df.copy().sort_index(ascending=False)
         st.dataframe(
             display_df.head(20),
-            use_container_width=True,
+            width="stretch",
             column_config={
                 "ReID_Score": st.column_config.NumberColumn("AI類似度", format="%.2f"),
                 "Dwell_Time_sec": st.column_config.NumberColumn("滞在時間(秒)", format="%.1f"),
