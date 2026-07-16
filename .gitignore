@@ -49,3 +49,8 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+decoded*/
+feature_images/
+
+

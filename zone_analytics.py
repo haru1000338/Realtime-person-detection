@@ -10,8 +10,9 @@ class ZoneAnalytics:
         self.active_trackers = {}
         self.exit_candidates = {}
         self.booths_rate = {
-            "Booth_A": np.array([[0, 0], [0.5, 0], [0.5, 1], [0, 1]], np.float32),
-            "Booth_B": np.array([[0.5, 0], [1, 0], [1, 1], [0.5, 1]], np.float32),
+            "Booth_A": np.array([[0, 0], [0.5, 0], [0.5, 0.5], [0, 0.5]], np.float32),
+            "Booth_B": np.array([[0.5, 0], [1, 0], [1, 0.5], [0.5, 0.5]], np.float32),
+            "Booth_C": np.array([[0, 0.5], [1, 0.5], [1, 1], [0, 1]], np.float32),
         }
 
     def build_booths(self, img_w, img_h):

@@ -5,7 +5,7 @@ import time
 
 async def main():
     # 🌟 宛先が http:// から ws:// (WebSocket) に変わります
-    SERVER_URI = "ws://localhost:8000/ws/upload"
+    SERVER_URI = "ws://133.72.132.28:18011/ws/upload"
     
     VIDEO_SOURCE = 0
     cap = cv2.VideoCapture(VIDEO_SOURCE)
@@ -28,7 +28,7 @@ async def main():
                         await asyncio.sleep(0.1)
                         continue
 
-                    # 画像をJPEGに圧縮（画質を70にしてさらに軽量化）
+                    # 画像をJPEGに圧縮（画質を70%に圧縮）
                     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 70]
                     ret, buffer = cv2.imencode('.jpg', frame, encode_param)
                     

@@ -27,7 +27,7 @@ html_page = """
 <!DOCTYPE html>
 <html>
     <head>
-        <title>AI監視ダッシュボード</title>
+        <title>Track Eye</title>
         <style>
             body { font-family: sans-serif; text-align: center; background-color: #222; color: white; margin: 0; padding: 20px; }
             h2 { color: #00ffcc; }
@@ -42,7 +42,7 @@ html_page = """
         </style>
     </head>
     <body>
-        <h2>🔴 リアルタイム監視ダッシュボード</h2>
+        <h2>🔴 Track Eye</h2>
         
         <div class="button-group">
             <button class="btn btn-blue" onclick="registerStaff()">📸 スタッフ登録 (s)</button>

@@ -6,7 +6,7 @@ import os
 
 # ページの設定
 st.set_page_config(page_title="オープンキャンパス動線分析", layout="wide", initial_sidebar_state="expanded")
-st.title("📊 リアルタイム滞在分析ダッシュボード")
+st.title("📊 ダッシュボード")
 
 # 🌟 データの読み込み
 @st.cache_data(ttl=5)

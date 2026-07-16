@@ -14,7 +14,11 @@ zone_analytics = ZoneAnalytics()
 visualizer = Visualizer()
 
 def process_frame(model, img, heatmap_generator, data_logger, conf_threshold=0.5, show_heatmap=True):
-    """1フレームの画像を受け取り、追跡（トラッキング）と描画を行う"""
+    """
+    input: 1フレームの画像
+    output: 追跡結果を描画した画像と、追跡結果のリスト
+    1フレームの画像を受け取り、追跡（トラッキング）と描画を行う
+    """
     source_img = adjust_contrast_brightness(img, contrast=1.0, brightness=0)
 
     # 【魔法の1行】ただの推論ではなく、trackモードでByteTrack（ID追跡）を有効にする

@@ -12,12 +12,12 @@ class IDMatchResult:
     label: str
 
 class IDManager:
-    def __init__(self, similarity_threshold=0.70, timeout_seconds=1800, visitor_path="visitor_features.pt", staff_path="staff_features.pt"):
+    def __init__(self, similarity_threshold=0.85, timeout_seconds=1800, visitor_path="visitor_features.pt", staff_path="staff_features.pt"):
         # 🎯 判定のライン（これを超えたら同一人物）
         self.similarity_threshold = similarity_threshold
         
         # 🎯 多様性フィルター（これ以上似ていたら辞書に追加しない）
-        self.diversity_threshold = 0.90 
+        self.diversity_threshold = 0.95 
         
         # 🎯 1人あたりが保持する特徴量の最大数（プールサイズ）
         self.MAX_POOL_SIZE = 5 
