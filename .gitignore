@@ -51,3 +51,6 @@ logs/
 Thumbs.db
 decoded*/
 feature_images/
+
+eval_images/
+crops/
