@@ -53,4 +53,10 @@ decoded*/
 feature_images/
 
 eval_images/
+eval_results/
 crops/
+osnet_weights/
+
+# 実験結果のCSVは追跡する
+!docs/experiments/results/*.csv
+!docs/experiments/*.csv
