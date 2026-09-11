@@ -55,6 +55,7 @@ feature_images/
 eval_images/
 eval_results/
 crops/
+crops_v2/
 osnet_weights/
 
 # 実験結果のCSVは追跡する
