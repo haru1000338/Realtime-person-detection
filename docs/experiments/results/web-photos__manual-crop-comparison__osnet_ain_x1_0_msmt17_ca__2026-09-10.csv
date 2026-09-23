@@ -1,0 +1,172 @@
+condition,image_a,image_b,person_a,person_b,same_person,score,over_threshold
+diff_face_same_clothes,diff_face_same_clothes/jpn11_01-crop.jpg,diff_face_same_clothes/jpn11_01.jpg,jpn11,jpn11,True,0.9948444366455078,True
+diff_face_same_clothes,diff_face_same_clothes/jpn11_01-crop.jpg,diff_face_same_clothes/jpn16_01-crop.jpg,jpn11,jpn16,False,0.9471907615661621,True
+diff_face_same_clothes,diff_face_same_clothes/jpn11_01-crop.jpg,diff_face_same_clothes/jpn16_01.jpg,jpn11,jpn16,False,0.9503538608551025,True
+diff_face_same_clothes,diff_face_same_clothes/jpn11_01-crop.jpg,diff_face_same_clothes/jpn20_01-crop.jpg,jpn11,jpn20,False,0.9283509254455566,True
+diff_face_same_clothes,diff_face_same_clothes/jpn11_01-crop.jpg,diff_face_same_clothes/jpn20_01.jpg,jpn11,jpn20,False,0.936310887336731,True
+diff_face_same_clothes,diff_face_same_clothes/jpn11_01-crop.jpg,diff_face_same_clothes/jpn21_01-crop.jpg,jpn11,jpn21,False,0.9646785855293274,True
+diff_face_same_clothes,diff_face_same_clothes/jpn11_01-crop.jpg,diff_face_same_clothes/jpn21_01.jpg,jpn11,jpn21,False,0.9662741422653198,True
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn11_01-crop.jpg,diff_face_same_clothes_full/socA_01-crop.jpg,jpn11,socA,False,0.5211665630340576,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn11_01-crop.jpg,diff_face_same_clothes_full/socA_01.jpg,jpn11,socA,False,0.5229185223579407,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn11_01-crop.jpg,diff_face_same_clothes_full/socB_01-crop.jpg,jpn11,socB,False,0.5058696269989014,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn11_01-crop.jpg,diff_face_same_clothes_full/socB_01.jpg,jpn11,socB,False,0.5008866786956787,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn11_01-crop.jpg,diff_face_same_clothes_full/socC_01-crop.jpg,jpn11,socC,False,0.5143152475357056,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn11_01-crop.jpg,diff_face_same_clothes_full/socC_01.webp,jpn11,socC,False,0.5090283155441284,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn11_01-crop.jpg,same_all_diff_angle/modelB_test01.png,jpn11,modelB,False,0.47275495529174805,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn11_01-crop.jpg,same_all_diff_angle/modelB_test02.png,jpn11,modelB,False,0.5378673076629639,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn11_01-crop.jpg,same_all_diff_angle/modelB_test03.png,jpn11,modelB,False,0.4194602966308594,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn11_01-crop.jpg,same_face_diff_clothes/modelA_test01.png,jpn11,modelA,False,0.4521501958370209,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn11_01-crop.jpg,same_face_diff_clothes/modelA_test02.png,jpn11,modelA,False,0.3910542130470276,False
+diff_face_same_clothes,diff_face_same_clothes/jpn11_01.jpg,diff_face_same_clothes/jpn16_01-crop.jpg,jpn11,jpn16,False,0.9472508430480957,True
+diff_face_same_clothes,diff_face_same_clothes/jpn11_01.jpg,diff_face_same_clothes/jpn16_01.jpg,jpn11,jpn16,False,0.9532866477966309,True
+diff_face_same_clothes,diff_face_same_clothes/jpn11_01.jpg,diff_face_same_clothes/jpn20_01-crop.jpg,jpn11,jpn20,False,0.9329323172569275,True
+diff_face_same_clothes,diff_face_same_clothes/jpn11_01.jpg,diff_face_same_clothes/jpn20_01.jpg,jpn11,jpn20,False,0.9407722353935242,True
+diff_face_same_clothes,diff_face_same_clothes/jpn11_01.jpg,diff_face_same_clothes/jpn21_01-crop.jpg,jpn11,jpn21,False,0.9635394811630249,True
+diff_face_same_clothes,diff_face_same_clothes/jpn11_01.jpg,diff_face_same_clothes/jpn21_01.jpg,jpn11,jpn21,False,0.9670625329017639,True
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn11_01.jpg,diff_face_same_clothes_full/socA_01-crop.jpg,jpn11,socA,False,0.5288934111595154,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn11_01.jpg,diff_face_same_clothes_full/socA_01.jpg,jpn11,socA,False,0.5307316780090332,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn11_01.jpg,diff_face_same_clothes_full/socB_01-crop.jpg,jpn11,socB,False,0.5083211064338684,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn11_01.jpg,diff_face_same_clothes_full/socB_01.jpg,jpn11,socB,False,0.5025388598442078,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn11_01.jpg,diff_face_same_clothes_full/socC_01-crop.jpg,jpn11,socC,False,0.518096923828125,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn11_01.jpg,diff_face_same_clothes_full/socC_01.webp,jpn11,socC,False,0.5111862421035767,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn11_01.jpg,same_all_diff_angle/modelB_test01.png,jpn11,modelB,False,0.4674679934978485,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn11_01.jpg,same_all_diff_angle/modelB_test02.png,jpn11,modelB,False,0.5297362804412842,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn11_01.jpg,same_all_diff_angle/modelB_test03.png,jpn11,modelB,False,0.415881484746933,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn11_01.jpg,same_face_diff_clothes/modelA_test01.png,jpn11,modelA,False,0.4454401135444641,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn11_01.jpg,same_face_diff_clothes/modelA_test02.png,jpn11,modelA,False,0.3838409185409546,False
+diff_face_same_clothes,diff_face_same_clothes/jpn16_01-crop.jpg,diff_face_same_clothes/jpn16_01.jpg,jpn16,jpn16,True,0.9953234195709229,True
+diff_face_same_clothes,diff_face_same_clothes/jpn16_01-crop.jpg,diff_face_same_clothes/jpn20_01-crop.jpg,jpn16,jpn20,False,0.9415267705917358,True
+diff_face_same_clothes,diff_face_same_clothes/jpn16_01-crop.jpg,diff_face_same_clothes/jpn20_01.jpg,jpn16,jpn20,False,0.9467827081680298,True
+diff_face_same_clothes,diff_face_same_clothes/jpn16_01-crop.jpg,diff_face_same_clothes/jpn21_01-crop.jpg,jpn16,jpn21,False,0.9588205814361572,True
+diff_face_same_clothes,diff_face_same_clothes/jpn16_01-crop.jpg,diff_face_same_clothes/jpn21_01.jpg,jpn16,jpn21,False,0.9686261415481567,True
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn16_01-crop.jpg,diff_face_same_clothes_full/socA_01-crop.jpg,jpn16,socA,False,0.5016043782234192,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn16_01-crop.jpg,diff_face_same_clothes_full/socA_01.jpg,jpn16,socA,False,0.5067474842071533,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn16_01-crop.jpg,diff_face_same_clothes_full/socB_01-crop.jpg,jpn16,socB,False,0.48930415511131287,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn16_01-crop.jpg,diff_face_same_clothes_full/socB_01.jpg,jpn16,socB,False,0.48047271370887756,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn16_01-crop.jpg,diff_face_same_clothes_full/socC_01-crop.jpg,jpn16,socC,False,0.49127769470214844,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn16_01-crop.jpg,diff_face_same_clothes_full/socC_01.webp,jpn16,socC,False,0.4820290207862854,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn16_01-crop.jpg,same_all_diff_angle/modelB_test01.png,jpn16,modelB,False,0.4615216553211212,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn16_01-crop.jpg,same_all_diff_angle/modelB_test02.png,jpn16,modelB,False,0.5165809988975525,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn16_01-crop.jpg,same_all_diff_angle/modelB_test03.png,jpn16,modelB,False,0.4006657600402832,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn16_01-crop.jpg,same_face_diff_clothes/modelA_test01.png,jpn16,modelA,False,0.44478750228881836,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn16_01-crop.jpg,same_face_diff_clothes/modelA_test02.png,jpn16,modelA,False,0.38447943329811096,False
+diff_face_same_clothes,diff_face_same_clothes/jpn16_01.jpg,diff_face_same_clothes/jpn20_01-crop.jpg,jpn16,jpn20,False,0.9405577182769775,True
+diff_face_same_clothes,diff_face_same_clothes/jpn16_01.jpg,diff_face_same_clothes/jpn20_01.jpg,jpn16,jpn20,False,0.9490154981613159,True
+diff_face_same_clothes,diff_face_same_clothes/jpn16_01.jpg,diff_face_same_clothes/jpn21_01-crop.jpg,jpn16,jpn21,False,0.9558460712432861,True
+diff_face_same_clothes,diff_face_same_clothes/jpn16_01.jpg,diff_face_same_clothes/jpn21_01.jpg,jpn16,jpn21,False,0.9667599201202393,True
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn16_01.jpg,diff_face_same_clothes_full/socA_01-crop.jpg,jpn16,socA,False,0.5075304508209229,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn16_01.jpg,diff_face_same_clothes_full/socA_01.jpg,jpn16,socA,False,0.5119571685791016,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn16_01.jpg,diff_face_same_clothes_full/socB_01-crop.jpg,jpn16,socB,False,0.4915747344493866,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn16_01.jpg,diff_face_same_clothes_full/socB_01.jpg,jpn16,socB,False,0.4829270839691162,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn16_01.jpg,diff_face_same_clothes_full/socC_01-crop.jpg,jpn16,socC,False,0.4957290291786194,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn16_01.jpg,diff_face_same_clothes_full/socC_01.webp,jpn16,socC,False,0.48644399642944336,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn16_01.jpg,same_all_diff_angle/modelB_test01.png,jpn16,modelB,False,0.46339744329452515,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn16_01.jpg,same_all_diff_angle/modelB_test02.png,jpn16,modelB,False,0.5121854543685913,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn16_01.jpg,same_all_diff_angle/modelB_test03.png,jpn16,modelB,False,0.3965137302875519,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn16_01.jpg,same_face_diff_clothes/modelA_test01.png,jpn16,modelA,False,0.4426785409450531,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn16_01.jpg,same_face_diff_clothes/modelA_test02.png,jpn16,modelA,False,0.38242268562316895,False
+diff_face_same_clothes,diff_face_same_clothes/jpn20_01-crop.jpg,diff_face_same_clothes/jpn20_01.jpg,jpn20,jpn20,True,0.9941364526748657,True
+diff_face_same_clothes,diff_face_same_clothes/jpn20_01-crop.jpg,diff_face_same_clothes/jpn21_01-crop.jpg,jpn20,jpn21,False,0.947743833065033,True
+diff_face_same_clothes,diff_face_same_clothes/jpn20_01-crop.jpg,diff_face_same_clothes/jpn21_01.jpg,jpn20,jpn21,False,0.9542179107666016,True
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn20_01-crop.jpg,diff_face_same_clothes_full/socA_01-crop.jpg,jpn20,socA,False,0.48735511302948,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn20_01-crop.jpg,diff_face_same_clothes_full/socA_01.jpg,jpn20,socA,False,0.4918169379234314,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn20_01-crop.jpg,diff_face_same_clothes_full/socB_01-crop.jpg,jpn20,socB,False,0.4638090133666992,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn20_01-crop.jpg,diff_face_same_clothes_full/socB_01.jpg,jpn20,socB,False,0.4570451080799103,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn20_01-crop.jpg,diff_face_same_clothes_full/socC_01-crop.jpg,jpn20,socC,False,0.4727776050567627,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn20_01-crop.jpg,diff_face_same_clothes_full/socC_01.webp,jpn20,socC,False,0.4648332893848419,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn20_01-crop.jpg,same_all_diff_angle/modelB_test01.png,jpn20,modelB,False,0.4118240475654602,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn20_01-crop.jpg,same_all_diff_angle/modelB_test02.png,jpn20,modelB,False,0.47582685947418213,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn20_01-crop.jpg,same_all_diff_angle/modelB_test03.png,jpn20,modelB,False,0.3824021816253662,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn20_01-crop.jpg,same_face_diff_clothes/modelA_test01.png,jpn20,modelA,False,0.4103812873363495,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn20_01-crop.jpg,same_face_diff_clothes/modelA_test02.png,jpn20,modelA,False,0.3647303581237793,False
+diff_face_same_clothes,diff_face_same_clothes/jpn20_01.jpg,diff_face_same_clothes/jpn21_01-crop.jpg,jpn20,jpn21,False,0.9505342245101929,True
+diff_face_same_clothes,diff_face_same_clothes/jpn20_01.jpg,diff_face_same_clothes/jpn21_01.jpg,jpn20,jpn21,False,0.9593810439109802,True
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn20_01.jpg,diff_face_same_clothes_full/socA_01-crop.jpg,jpn20,socA,False,0.4930483102798462,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn20_01.jpg,diff_face_same_clothes_full/socA_01.jpg,jpn20,socA,False,0.4982225298881531,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn20_01.jpg,diff_face_same_clothes_full/socB_01-crop.jpg,jpn20,socB,False,0.46155405044555664,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn20_01.jpg,diff_face_same_clothes_full/socB_01.jpg,jpn20,socB,False,0.4544311761856079,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn20_01.jpg,diff_face_same_clothes_full/socC_01-crop.jpg,jpn20,socC,False,0.474617600440979,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn20_01.jpg,diff_face_same_clothes_full/socC_01.webp,jpn20,socC,False,0.46619629859924316,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn20_01.jpg,same_all_diff_angle/modelB_test01.png,jpn20,modelB,False,0.41375112533569336,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn20_01.jpg,same_all_diff_angle/modelB_test02.png,jpn20,modelB,False,0.47428154945373535,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn20_01.jpg,same_all_diff_angle/modelB_test03.png,jpn20,modelB,False,0.37074196338653564,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn20_01.jpg,same_face_diff_clothes/modelA_test01.png,jpn20,modelA,False,0.40729621052742004,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn20_01.jpg,same_face_diff_clothes/modelA_test02.png,jpn20,modelA,False,0.366537868976593,False
+diff_face_same_clothes,diff_face_same_clothes/jpn21_01-crop.jpg,diff_face_same_clothes/jpn21_01.jpg,jpn21,jpn21,True,0.9940587282180786,True
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn21_01-crop.jpg,diff_face_same_clothes_full/socA_01-crop.jpg,jpn21,socA,False,0.48347654938697815,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn21_01-crop.jpg,diff_face_same_clothes_full/socA_01.jpg,jpn21,socA,False,0.4865853488445282,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn21_01-crop.jpg,diff_face_same_clothes_full/socB_01-crop.jpg,jpn21,socB,False,0.46758171916007996,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn21_01-crop.jpg,diff_face_same_clothes_full/socB_01.jpg,jpn21,socB,False,0.45979195833206177,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn21_01-crop.jpg,diff_face_same_clothes_full/socC_01-crop.jpg,jpn21,socC,False,0.4920685589313507,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn21_01-crop.jpg,diff_face_same_clothes_full/socC_01.webp,jpn21,socC,False,0.482069194316864,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn21_01-crop.jpg,same_all_diff_angle/modelB_test01.png,jpn21,modelB,False,0.46335726976394653,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn21_01-crop.jpg,same_all_diff_angle/modelB_test02.png,jpn21,modelB,False,0.5289319157600403,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn21_01-crop.jpg,same_all_diff_angle/modelB_test03.png,jpn21,modelB,False,0.40684229135513306,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn21_01-crop.jpg,same_face_diff_clothes/modelA_test01.png,jpn21,modelA,False,0.42578375339508057,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn21_01-crop.jpg,same_face_diff_clothes/modelA_test02.png,jpn21,modelA,False,0.3543514907360077,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn21_01.jpg,diff_face_same_clothes_full/socA_01-crop.jpg,jpn21,socA,False,0.490469753742218,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn21_01.jpg,diff_face_same_clothes_full/socA_01.jpg,jpn21,socA,False,0.49487248063087463,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn21_01.jpg,diff_face_same_clothes_full/socB_01-crop.jpg,jpn21,socB,False,0.4773261845111847,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn21_01.jpg,diff_face_same_clothes_full/socB_01.jpg,jpn21,socB,False,0.47044453024864197,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn21_01.jpg,diff_face_same_clothes_full/socC_01-crop.jpg,jpn21,socC,False,0.4926183223724365,False
+diff_face_same_clothes × diff_face_same_clothes_full,diff_face_same_clothes/jpn21_01.jpg,diff_face_same_clothes_full/socC_01.webp,jpn21,socC,False,0.4826684296131134,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn21_01.jpg,same_all_diff_angle/modelB_test01.png,jpn21,modelB,False,0.45438942313194275,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn21_01.jpg,same_all_diff_angle/modelB_test02.png,jpn21,modelB,False,0.5164024829864502,False
+diff_face_same_clothes × same_all_diff_angle,diff_face_same_clothes/jpn21_01.jpg,same_all_diff_angle/modelB_test03.png,jpn21,modelB,False,0.401927649974823,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn21_01.jpg,same_face_diff_clothes/modelA_test01.png,jpn21,modelA,False,0.428610622882843,False
+diff_face_same_clothes × same_face_diff_clothes,diff_face_same_clothes/jpn21_01.jpg,same_face_diff_clothes/modelA_test02.png,jpn21,modelA,False,0.36156532168388367,False
+diff_face_same_clothes_full,diff_face_same_clothes_full/socA_01-crop.jpg,diff_face_same_clothes_full/socA_01.jpg,socA,socA,True,0.9972404837608337,True
+diff_face_same_clothes_full,diff_face_same_clothes_full/socA_01-crop.jpg,diff_face_same_clothes_full/socB_01-crop.jpg,socA,socB,False,0.876863956451416,True
+diff_face_same_clothes_full,diff_face_same_clothes_full/socA_01-crop.jpg,diff_face_same_clothes_full/socB_01.jpg,socA,socB,False,0.868965744972229,True
+diff_face_same_clothes_full,diff_face_same_clothes_full/socA_01-crop.jpg,diff_face_same_clothes_full/socC_01-crop.jpg,socA,socC,False,0.8388000726699829,True
+diff_face_same_clothes_full,diff_face_same_clothes_full/socA_01-crop.jpg,diff_face_same_clothes_full/socC_01.webp,socA,socC,False,0.8350268006324768,True
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socA_01-crop.jpg,same_all_diff_angle/modelB_test01.png,socA,modelB,False,0.49521344900131226,False
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socA_01-crop.jpg,same_all_diff_angle/modelB_test02.png,socA,modelB,False,0.5175427198410034,False
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socA_01-crop.jpg,same_all_diff_angle/modelB_test03.png,socA,modelB,False,0.49374639987945557,False
+diff_face_same_clothes_full × same_face_diff_clothes,diff_face_same_clothes_full/socA_01-crop.jpg,same_face_diff_clothes/modelA_test01.png,socA,modelA,False,0.46798640489578247,False
+diff_face_same_clothes_full × same_face_diff_clothes,diff_face_same_clothes_full/socA_01-crop.jpg,same_face_diff_clothes/modelA_test02.png,socA,modelA,False,0.49880552291870117,False
+diff_face_same_clothes_full,diff_face_same_clothes_full/socA_01.jpg,diff_face_same_clothes_full/socB_01-crop.jpg,socA,socB,False,0.8852275013923645,True
+diff_face_same_clothes_full,diff_face_same_clothes_full/socA_01.jpg,diff_face_same_clothes_full/socB_01.jpg,socA,socB,False,0.8778893947601318,True
+diff_face_same_clothes_full,diff_face_same_clothes_full/socA_01.jpg,diff_face_same_clothes_full/socC_01-crop.jpg,socA,socC,False,0.8451484441757202,True
+diff_face_same_clothes_full,diff_face_same_clothes_full/socA_01.jpg,diff_face_same_clothes_full/socC_01.webp,socA,socC,False,0.8427441120147705,True
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socA_01.jpg,same_all_diff_angle/modelB_test01.png,socA,modelB,False,0.49373823404312134,False
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socA_01.jpg,same_all_diff_angle/modelB_test02.png,socA,modelB,False,0.5182176828384399,False
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socA_01.jpg,same_all_diff_angle/modelB_test03.png,socA,modelB,False,0.49662792682647705,False
+diff_face_same_clothes_full × same_face_diff_clothes,diff_face_same_clothes_full/socA_01.jpg,same_face_diff_clothes/modelA_test01.png,socA,modelA,False,0.46967676281929016,False
+diff_face_same_clothes_full × same_face_diff_clothes,diff_face_same_clothes_full/socA_01.jpg,same_face_diff_clothes/modelA_test02.png,socA,modelA,False,0.5056005716323853,False
+diff_face_same_clothes_full,diff_face_same_clothes_full/socB_01-crop.jpg,diff_face_same_clothes_full/socB_01.jpg,socB,socB,True,0.9949223399162292,True
+diff_face_same_clothes_full,diff_face_same_clothes_full/socB_01-crop.jpg,diff_face_same_clothes_full/socC_01-crop.jpg,socB,socC,False,0.8762494921684265,True
+diff_face_same_clothes_full,diff_face_same_clothes_full/socB_01-crop.jpg,diff_face_same_clothes_full/socC_01.webp,socB,socC,False,0.8795169591903687,True
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socB_01-crop.jpg,same_all_diff_angle/modelB_test01.png,socB,modelB,False,0.54305499792099,False
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socB_01-crop.jpg,same_all_diff_angle/modelB_test02.png,socB,modelB,False,0.5655845999717712,False
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socB_01-crop.jpg,same_all_diff_angle/modelB_test03.png,socB,modelB,False,0.5895982980728149,False
+diff_face_same_clothes_full × same_face_diff_clothes,diff_face_same_clothes_full/socB_01-crop.jpg,same_face_diff_clothes/modelA_test01.png,socB,modelA,False,0.503024697303772,False
+diff_face_same_clothes_full × same_face_diff_clothes,diff_face_same_clothes_full/socB_01-crop.jpg,same_face_diff_clothes/modelA_test02.png,socB,modelA,False,0.4825071692466736,False
+diff_face_same_clothes_full,diff_face_same_clothes_full/socB_01.jpg,diff_face_same_clothes_full/socC_01-crop.jpg,socB,socC,False,0.8712925910949707,True
+diff_face_same_clothes_full,diff_face_same_clothes_full/socB_01.jpg,diff_face_same_clothes_full/socC_01.webp,socB,socC,False,0.8781915903091431,True
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socB_01.jpg,same_all_diff_angle/modelB_test01.png,socB,modelB,False,0.5396955013275146,False
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socB_01.jpg,same_all_diff_angle/modelB_test02.png,socB,modelB,False,0.5662246942520142,False
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socB_01.jpg,same_all_diff_angle/modelB_test03.png,socB,modelB,False,0.5837424993515015,False
+diff_face_same_clothes_full × same_face_diff_clothes,diff_face_same_clothes_full/socB_01.jpg,same_face_diff_clothes/modelA_test01.png,socB,modelA,False,0.5111469030380249,False
+diff_face_same_clothes_full × same_face_diff_clothes,diff_face_same_clothes_full/socB_01.jpg,same_face_diff_clothes/modelA_test02.png,socB,modelA,False,0.49332666397094727,False
+diff_face_same_clothes_full,diff_face_same_clothes_full/socC_01-crop.jpg,diff_face_same_clothes_full/socC_01.webp,socC,socC,True,0.9926292896270752,True
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socC_01-crop.jpg,same_all_diff_angle/modelB_test01.png,socC,modelB,False,0.5216078758239746,False
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socC_01-crop.jpg,same_all_diff_angle/modelB_test02.png,socC,modelB,False,0.5431263446807861,False
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socC_01-crop.jpg,same_all_diff_angle/modelB_test03.png,socC,modelB,False,0.5565305352210999,False
+diff_face_same_clothes_full × same_face_diff_clothes,diff_face_same_clothes_full/socC_01-crop.jpg,same_face_diff_clothes/modelA_test01.png,socC,modelA,False,0.4674501419067383,False
+diff_face_same_clothes_full × same_face_diff_clothes,diff_face_same_clothes_full/socC_01-crop.jpg,same_face_diff_clothes/modelA_test02.png,socC,modelA,False,0.45972806215286255,False
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socC_01.webp,same_all_diff_angle/modelB_test01.png,socC,modelB,False,0.5311738848686218,False
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socC_01.webp,same_all_diff_angle/modelB_test02.png,socC,modelB,False,0.5525673627853394,False
+diff_face_same_clothes_full × same_all_diff_angle,diff_face_same_clothes_full/socC_01.webp,same_all_diff_angle/modelB_test03.png,socC,modelB,False,0.5584893822669983,False
+diff_face_same_clothes_full × same_face_diff_clothes,diff_face_same_clothes_full/socC_01.webp,same_face_diff_clothes/modelA_test01.png,socC,modelA,False,0.48617810010910034,False
+diff_face_same_clothes_full × same_face_diff_clothes,diff_face_same_clothes_full/socC_01.webp,same_face_diff_clothes/modelA_test02.png,socC,modelA,False,0.4726610481739044,False
+same_all_diff_angle,same_all_diff_angle/modelB_test01.png,same_all_diff_angle/modelB_test02.png,modelB,modelB,True,0.863940954208374,True
+same_all_diff_angle,same_all_diff_angle/modelB_test01.png,same_all_diff_angle/modelB_test03.png,modelB,modelB,True,0.7257786393165588,True
+same_all_diff_angle × same_face_diff_clothes,same_all_diff_angle/modelB_test01.png,same_face_diff_clothes/modelA_test01.png,modelB,modelA,False,0.5193269848823547,False
+same_all_diff_angle × same_face_diff_clothes,same_all_diff_angle/modelB_test01.png,same_face_diff_clothes/modelA_test02.png,modelB,modelA,False,0.3447667956352234,False
+same_all_diff_angle,same_all_diff_angle/modelB_test02.png,same_all_diff_angle/modelB_test03.png,modelB,modelB,True,0.7209282517433167,True
+same_all_diff_angle × same_face_diff_clothes,same_all_diff_angle/modelB_test02.png,same_face_diff_clothes/modelA_test01.png,modelB,modelA,False,0.560538649559021,False
+same_all_diff_angle × same_face_diff_clothes,same_all_diff_angle/modelB_test02.png,same_face_diff_clothes/modelA_test02.png,modelB,modelA,False,0.37772876024246216,False
+same_all_diff_angle × same_face_diff_clothes,same_all_diff_angle/modelB_test03.png,same_face_diff_clothes/modelA_test01.png,modelB,modelA,False,0.46020638942718506,False
+same_all_diff_angle × same_face_diff_clothes,same_all_diff_angle/modelB_test03.png,same_face_diff_clothes/modelA_test02.png,modelB,modelA,False,0.39047789573669434,False
+same_face_diff_clothes,same_face_diff_clothes/modelA_test01.png,same_face_diff_clothes/modelA_test02.png,modelA,modelA,True,0.5807499885559082,False

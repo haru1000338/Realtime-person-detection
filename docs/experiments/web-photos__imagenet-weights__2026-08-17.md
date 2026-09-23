@@ -85,4 +85,4 @@
 ## 関連ファイル
 
 - `eval_reid.py`
-- `2026-08-17_osnet-imagenet-baseline.csv`（全36ペア）
+- `results/web-photos__imagenet-weights__imagenet__2026-08-17.csv`（全36ペア）

@@ -35,13 +35,13 @@ Re-ID 学習済み重みに差し替えて比較した。あわせて、切り�
  
 | # | ラベル | model_name | 学習データ | CSV |
 |---|--------|------------|------------|-----|
-| 1 | `imagenet_baseline` | osnet_x1_0 | ImageNet（Re-ID学習なし） | `results/imagenet_baseline.csv` |
-| 2 | `osnet_ain_x1_0_msmt17_ca` | osnet_ain_x1_0 | MSMT17 (combineall) | `results/osnet_ain_x1_0_msmt17_ca.csv` |
-| 3 | `osnet_x0_5_msmt17_ca` | osnet_x0_5 | MSMT17 (combineall) | `results/osnet_x0_5_msmt17_ca.csv` |
-| 4 | `osnet_x0_75_msmt17_ca` | osnet_x0_75 | MSMT17 (combineall) | `results/osnet_x0_75_msmt17_ca.csv` |
-| 5 | `osnet_x1_0_market1501` | osnet_x1_0 | Market-1501 | `results/osnet_x1_0_market1501.csv` |
-| 6 | `osnet_x1_0_msmt17` | osnet_x1_0 | MSMT17 | `results/osnet_x1_0_msmt17.csv` |
-| 7 | `osnet_x1_0_msmt17_ca` | osnet_x1_0 | MSMT17 (combineall) | `results/osnet_x1_0_msmt17_ca.csv` |
+| 1 | `imagenet_baseline` | osnet_x1_0 | ImageNet（Re-ID学習なし） | `results/web-photos__weights-comparison__imagenet_baseline__2026-08-17.csv` |
+| 2 | `osnet_ain_x1_0_msmt17_ca` | osnet_ain_x1_0 | MSMT17 (combineall) | `results/web-photos__weights-comparison__osnet_ain_x1_0_msmt17_ca__2026-08-17.csv` |
+| 3 | `osnet_x0_5_msmt17_ca` | osnet_x0_5 | MSMT17 (combineall) | `results/web-photos__weights-comparison__osnet_x0_5_msmt17_ca__2026-08-17.csv` |
+| 4 | `osnet_x0_75_msmt17_ca` | osnet_x0_75 | MSMT17 (combineall) | `results/web-photos__weights-comparison__osnet_x0_75_msmt17_ca__2026-08-17.csv` |
+| 5 | `osnet_x1_0_market1501` | osnet_x1_0 | Market-1501 | `results/web-photos__weights-comparison__osnet_x1_0_market1501__2026-08-17.csv` |
+| 6 | `osnet_x1_0_msmt17` | osnet_x1_0 | MSMT17 | `results/web-photos__weights-comparison__osnet_x1_0_msmt17__2026-08-17.csv` |
+| 7 | `osnet_x1_0_msmt17_ca` | osnet_x1_0 | MSMT17 (combineall) | `results/web-photos__weights-comparison__osnet_x1_0_msmt17_ca__2026-08-17.csv` |
 | — | `osnet_ain_x1_0_msdc` | osnet_ain_x1_0 | MS+D+C → M | **読み込み失敗**（記録事項参照） |
  
 ### CSVのカラム
@@ -111,7 +111,7 @@ Re-ID 学習済み重みに差し替えて比較した。あわせて、切り�
 | ファイル | 内容 |
 |----------|------|
 | `eval_reid.py` | 検証スクリプト（`--sweep` 対応版） |
-| `results/*.csv` | 重みごとの全66ペアの生データ（7ファイル） |
+| `results/web-photos__weights-comparison__*__2026-08-17.csv` | 重みごとの全66ペアの生データ（7ファイル） |
 | `osnet_weights/` | 検証に使用した重み（`.gitignore` により追跡外） |
 | `eval_images/` | 使用画像（同上） |
 | `crops/` | YOLO による切り出し結果（同上） |
