@@ -1,63 +1,37 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
 *.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
 
-# Virtual environments
+# Environments and IDEs
 .venv/
-.venv*/
-venv*/
+venv/
 ENV/
-
-# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Models and large files
+# Build artifacts
+build/
+dist/
+*.egg
+
+# Models and generated data
 *.pt
 *.onnx
-yolo*.pt
 test_movie/
-
-
-# Output and logs
 runs/
 logs/
 *.log
 *.csv
-
-
-# OS
-.DS_Store
-Thumbs.db
-decoded*/
-feature_images/
-
-eval_images/
-eval_results/
-crops/
-crops_v2/
 osnet_weights/
 
-# 実験結果のCSVは追跡する
+# Local experiment and production data
+/tests/
+/production/
+
+# Experiment result CSVs are tracked
 !docs/experiments/results/*.csv
 !docs/experiments/*.csv
