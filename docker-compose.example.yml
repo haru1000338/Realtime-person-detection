@@ -1,0 +1,21 @@
+# docker-compose.example.yml
+services:
+  trackeye:
+    container_name: trackeye
+    build: .
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - .:/workspace
+    ports:
+      - "8000:8000"    # server.py
+      - "8501:8501"    # app.py
+    stdin_open: true
+    tty: true
+    environment:
+      - PYTHONUNBUFFERED=1
