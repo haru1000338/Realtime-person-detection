@@ -8,6 +8,7 @@ from torchreid.utils import FeatureExtractor
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f"Using device: {device}")
 # torchreidをimportして利用
+# OSNetのモデルがreid用のものじゃない
 extractor = FeatureExtractor(model_name='osnet_x1_0', device=device)
 
 def get_feature(img_bgr):
