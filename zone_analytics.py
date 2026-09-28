@@ -5,6 +5,12 @@ import numpy as np
 
 class ZoneAnalytics:
     def __init__(self, buffer_time=3.0):
+        """
+        buffer_time: 猶予時間
+        track_history: 各トラックIDの足元座標の履歴を保持する辞書
+        active_trackers: 現在アクティブな人の情報を保持する辞書
+        exit_candidates: 退出候補の人の辞書
+        """
         self.buffer_time = buffer_time
         self.track_history = defaultdict(list)
         self.active_trackers = {}
@@ -15,6 +21,11 @@ class ZoneAnalytics:
         }
 
     def build_booths(self, img_w, img_h):
+        """
+        ブースの座標を画像サイズに基づいてピクセル単位に変換する
+        img_w, img_h: カメラから届いた画像全体の幅と高さ
+        return: keyがブース名、valueがそのブースのポリゴン座標の辞書
+        """
         booths = {}
         for booth_name, rate_pts in self.booths_rate.items():
             pixel_pts = [[int(x * img_w), int(y * img_h)] for x, y in rate_pts]
@@ -22,18 +33,34 @@ class ZoneAnalytics:
         return booths
 
     def _get_current_booth(self, foot_x, foot_y, booths):
+        """
+        指定された座標がどのブース内にあるかを判定する
+        foot_x, foot_y: 人の足元の座標
+        booths: ブースの座標の辞書
+        return: その人が属するブースの名前、またはNone
+        """
         for booth_name, pts in booths.items():
-            is_inside = cv2.pointPolygonTest(pts, (foot_x, foot_y), False)
+            # cv2.pointPolygonTestを使って、(foot_x, foot_y) がブースのポリゴン内にあるかどうかを判定する
+            # Falseは距離を返さず、内外判定のみ(inside:1, on edge:0, outside:-1)
+            is_inside = cv2.pointPolygonTest(pts, (foot_x, foot_y), False) 
             if is_inside >= 0:
                 return booth_name
         return None
 
     def update(self, tracks, frame_shape, data_logger):
+        """
+        現在のフレームの情報を更新する
+        booths: ブースの座標の辞書(ブース名 -> ポリゴン座標)
+        current_time: 現在の時刻
+        current_ids_in_roi: 現在フレーム内に存在するIDのセット
+        enriched_tracks: 各トラックにブース情報や滞在時間を付加したリスト
+        """
         img_h, img_w = frame_shape[:2]
         booths = self.build_booths(img_w, img_h)
         current_time = time.time()
         current_ids_in_roi = set()
         enriched_tracks = []
+        # 今日はここまで。zone_analytics.py->logger.py->server.py->heatmap.py->visualizer.pyの順で進める
 
         for track in tracks:
             track_id = track["track_id"]
