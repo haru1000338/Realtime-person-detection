@@ -35,3 +35,4 @@ osnet_weights/
 # Experiment result CSVs are tracked
 !docs/experiments/results/*.csv
 !docs/experiments/*.csv
+docs/experiments/results/*.xlsx
