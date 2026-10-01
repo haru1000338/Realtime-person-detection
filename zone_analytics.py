@@ -49,30 +49,36 @@ class ZoneAnalytics:
 
     def update(self, tracks, frame_shape, data_logger):
         """
-        現在のフレームの情報を更新する
-        booths: ブースの座標の辞書(ブース名 -> ポリゴン座標)
-        current_time: 現在の時刻
-        current_ids_in_roi: 現在フレーム内に存在するIDのセット
-        enriched_tracks: 各トラックにブース情報や滞在時間を付加したリスト
+        現在のフレームの情報を更新し、ブース情報を付加したトラックを返す
+
+        tracks: 現在のフレームで検出されたトラックのリスト
+        frame_shape: 現在のフレームの形状 (height, width, channels)
+        data_logger: 退出時の記録を行うロガーオブジェクト
+        return: (enriched_tracks, booths)
+                enriched_tracks - 各トラックに current_booth / dwell_time /
+                                trajectory_points を付加したリスト
+                booths - ピクセル単位のブース座標の辞書
         """
         img_h, img_w = frame_shape[:2]
         booths = self.build_booths(img_w, img_h)
         current_time = time.time()
         current_ids_in_roi = set()
         enriched_tracks = []
-        # 今日はここまで。zone_analytics.py->logger.py->server.py->heatmap.py->visualizer.pyの順で進める
 
+        # 一人ずつの処理
         for track in tracks:
             track_id = track["track_id"]
             foot_x, foot_y = track["foot_point"]
             
-            # 🌟 NEW: filter.py から渡された AIの最新判定結果（Real_ID等）を受け取る
+            # filter.py から渡された AIの最新判定結果（Real_ID等）を受け取る
+            # trackはdict型
             real_id = track.get("real_id", "Unknown")
             status = track.get("status", "Unknown")
             reid_score = track.get("reid_score", 0.0)
 
             current_ids_in_roi.add(track_id)
 
+            # 上限30件で足元座標履歴を保持
             self.track_history[track_id].append((foot_x, foot_y))
             if len(self.track_history[track_id]) > 30:
                 self.track_history[track_id].pop(0)
@@ -80,19 +86,24 @@ class ZoneAnalytics:
             current_booth = self._get_current_booth(foot_x, foot_y, booths)
             dwell_time = 0.0
 
+            # 足元がブース内にある場合
             if current_booth:
                 if track_id in self.active_trackers:
                     previous_booth = self.active_trackers[track_id]["Booth_name"]
                     
-                    # ブースを移動した瞬間の記録！
+                    # ブースを移動した瞬間の記録
                     if previous_booth != current_booth:
+                        # TODO: dwell_timeがどこで使われるかを確認する
+                        # このdwell_timeは「移動前のブースでの滞在時間」を計算するために使用する
+                        # 直後に entry_timeをcurrent_timeに更新する→ブロック末尾で再計算される値がenriched_tracksに格納される
                         dwell_time = current_time - self.active_trackers[track_id]["entry_time"]
                         
-                        # 🌟 退出時の「最終確定したAIデータ」を取り出してロガーに渡す
+                        # ブースを移動する前の情報をロガーに記録する
                         past_real_id = self.active_trackers[track_id].get("real_id", "Unknown")
                         past_status = self.active_trackers[track_id].get("status", "Unknown")
                         past_score = self.active_trackers[track_id].get("reid_score", 0.0)
                         
+                        # 退出情報をロガーに記録
                         data_logger.record_exit(track_id, dwell_time, previous_booth, past_real_id, past_status, past_score)
                         
                         self.active_trackers[track_id] = {
@@ -103,13 +114,12 @@ class ZoneAnalytics:
                             "reid_score": reid_score
                         }
                     else:
-                        # 🌟 ここが超重要！
-                        # 同じブースに滞在している間にも、AIが「仮ID」から「S001」に動的昇格する可能性があるため、常に最新情報で上書き更新し続ける
+                        # 同じブースに滞在している間にも、判定結果が更新される可能性があるので、最新の情報を保持する
                         self.active_trackers[track_id]["real_id"] = real_id
                         self.active_trackers[track_id]["status"] = status
                         self.active_trackers[track_id]["reid_score"] = reid_score
                 else:
-                    # 初めてブースに入った人
+                    # 初めてブースに入った人の情報を記録する
                     self.active_trackers[track_id] = {
                         "Booth_name": current_booth,
                         "entry_time": current_time,
@@ -117,12 +127,13 @@ class ZoneAnalytics:
                         "status": status,
                         "reid_score": reid_score
                     }
-
+                # ブース内にいる間は、退出候補リストから削除する
                 if track_id in self.exit_candidates:
                     del self.exit_candidates[track_id]
 
                 dwell_time = current_time - self.active_trackers[track_id]["entry_time"]
 
+            # 情報を追加して enriched_tracks に格納
             track["current_booth"] = current_booth
             track["dwell_time"] = dwell_time
             track["trajectory_points"] = list(self.track_history[track_id])
@@ -130,31 +141,36 @@ class ZoneAnalytics:
 
         # 画面から消えた（ロストした）人の処理
         for track_id in list(self.active_trackers.keys()):
+            # 条件: 現在のフレームに存在しないIDで、かつ exit_candidates にも存在しない場合
             if track_id not in current_ids_in_roi and track_id not in self.exit_candidates:
+                # 画面から消えた人の情報を exit_candidates に追加
                 self.exit_candidates[track_id] = {
                     "booth_name": self.active_trackers[track_id]["Booth_name"],
                     "entry_time": self.active_trackers[track_id]["entry_time"],
                     "lost_time": current_time,
-                    # 🌟 画面から消える直前の「最も精度の高い状態」をコピーして退避させておく
+                    # 画面から消える直前の「最も精度の高い状態」をコピーして退避させておく
+                    # （最大スコアではなく、最後に取得したスコアを保持する）
                     "real_id": self.active_trackers[track_id].get("real_id", "Unknown"),
                     "status": self.active_trackers[track_id].get("status", "Unknown"),
                     "reid_score": self.active_trackers[track_id].get("reid_score", 0.0)
                 }
 
-        # バッファ時間を過ぎて「完全に退出した」とみなされた人の最終記録！
+        # バッファ時間を過ぎて「完全に退出した」とみなされた人の最終記録
         for track_id in list(self.exit_candidates.keys()):
             lost_duration = current_time - self.exit_candidates[track_id]["lost_time"]
             if lost_duration > self.buffer_time:
                 booth_name = self.exit_candidates[track_id]["booth_name"]
                 final_dwell_time = current_time - self.exit_candidates[track_id]["entry_time"]
                 
-                # 🌟 退避させておいた最終確定データを取り出してロガーに渡す
+                # 最終的な判定結果を取得する
                 final_real_id = self.exit_candidates[track_id].get("real_id", "Unknown")
                 final_status = self.exit_candidates[track_id].get("status", "Unknown")
                 final_score = self.exit_candidates[track_id].get("reid_score", 0.0)
-
+                
+                # ロガーに最終記録を残す
                 data_logger.record_exit(track_id, final_dwell_time, booth_name, final_real_id, final_status, final_score)
 
+                # 退出候補リストとアクティブトラッカーから削除する
                 if track_id in self.active_trackers:
                     del self.active_trackers[track_id]
                 del self.exit_candidates[track_id]
