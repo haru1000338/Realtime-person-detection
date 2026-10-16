@@ -1,4 +1,5 @@
 import cv2
+import os
 import torch
 import torch.nn.functional as F
 from torchreid.utils import FeatureExtractor
@@ -7,7 +8,20 @@ from torchreid.utils import FeatureExtractor
 # RTX 5060 TiのCUDA対応待ちのため、安定動作するCPUモードを強制指定
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f"Using device: {device}")
-extractor = FeatureExtractor(model_name='osnet_x1_0', device=device)
+
+MODEL_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "osnet_weights", "osnet_x1_0_msmt17.pth"
+)
+
+if not os.path.isfile(MODEL_PATH):
+    raise FileNotFoundError(f"OSNetの重みが見つかりません: {MODEL_PATH}")
+
+extractor = FeatureExtractor(
+    model_name='osnet_x1_0',
+    model_path=MODEL_PATH,
+    device=device
+)
 
 def get_feature(img_bgr):
     """画像を受け取り、512次元の特徴量ベクトルだけを返す関数"""
