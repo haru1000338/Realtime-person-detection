@@ -8,10 +8,9 @@ from fastapi.responses import StreamingResponse, HTMLResponse, JSONResponse
 from ultralytics import YOLO
 
 # AI推論用のモジュールをインポート
-from filter import process_frame, id_manager
+from filter import process_frame, id_manager, register_largest_as_staff
 from heatmap import HeatmapGenerator
 from logger import DataLogger
-import reid  # 🌟【重要】特徴量を抽出するために追加
 
 app = FastAPI()
 
@@ -159,43 +158,21 @@ async def generate_frames(request: Request):
             frame_start = time.perf_counter()
             capture_time = time.perf_counter()
 
+            annotated_frame, results = process_frame(
+                model, frame_to_process, heatmap_generator, data_logger,
+                show_heatmap=show_heatmap_state
+            )
+
             if trigger_register:
                 trigger_register = False
                 print("\n📸 Webからスタッフ登録ボタンが押されました！")
-                
-                max_area = 0
-                best_crop = None
-                
-                staff_results = model(frame_to_process, verbose=False)
-                if staff_results[0].boxes is not None:
-                    for box, cls in zip(staff_results[0].boxes.xyxy.cpu().numpy(), staff_results[0].boxes.cls.cpu().numpy()):
-                        if int(cls) == 0:  
-                            x0, y0, x1, y1 = map(int, box)
-                            area = (x1 - x0) * (y1 - y0)
-                            if area > max_area:
-                                max_area = area
-                                best_crop = frame_to_process[y0:y1, x0:x1]
-                
-                if best_crop is not None and best_crop.shape[0] > 0 and best_crop.shape[1] > 10:
-                    new_staff_feat = reid.get_feature(best_crop)
-                    if hasattr(id_manager, 'staff_features'):
-                        staff_dict = id_manager.staff_features
-                    else:
-                        staff_dict = id_manager.staff_featrues
-                        
-                    new_staff_id = f"S{len(staff_dict) + 1:03d}"
-                    staff_dict[new_staff_id] = [new_staff_feat]
-                    id_manager.save_features()
+                # 追跡中で最も大きく映っている人物を、track_id ごと登録する
+                new_staff_id = register_largest_as_staff(frame_to_process, results)
+                if new_staff_id:
                     print(f"✅ 【登録完了】Webからスタッフ {new_staff_id} を登録しました！")
-                    
-                    cv2.rectangle(frame_to_process, (0, 0), (frame_to_process.shape[1], frame_to_process.shape[0]), (0, 255, 0), -1)
+                    cv2.rectangle(annotated_frame, (0, 0), (annotated_frame.shape[1], annotated_frame.shape[0]), (0, 255, 0), -1)
                 else:
                     print("⚠️ 人が映っていないか、小さすぎて登録できませんでした。")
-
-            annotated_frame, results = process_frame(
-                model, frame_to_process, heatmap_generator, data_logger, 
-                conf_threshold=0.6, show_heatmap=show_heatmap_state
-            )
 
             display_time = time.perf_counter()
             processing_ms = (display_time - capture_time) * 1000.0

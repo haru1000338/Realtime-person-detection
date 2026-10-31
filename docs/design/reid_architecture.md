@@ -1,7 +1,7 @@
 # Re-ID アーキテクチャ設計
 
 - 最終更新: 2026-10-01
-- 対象: `main.py`（`process_frame`）、`reid.py`、`id_manager.py`、`zone_analytics.py`
+- 対象: `filter.py`（`process_frame`）、`reid.py`、`id_manager.py`、`zone_analytics.py`
 
 ## この文書の目的
 

@@ -28,7 +28,7 @@ class Visualizer:
                 color = (255, 100, 0)  # スタッフ：明るい青色 (B, G, R)
                 thickness = 3          # スタッフは枠線を太くして目立たせる
             else:
-                color = (0, 0, 255) if current_booth else (0, 255, 0)  # 来場者：ブース内なら赤、外なら緑
+                color = (0, 0, 255)  # 来場者：赤
                 thickness = 2
 
             # 軌跡（歩いたルート）の描画

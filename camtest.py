@@ -2,10 +2,9 @@ import cv2
 import time
 from ultralytics import YOLO
 
-from filter import process_frame, id_manager
+from filter import process_frame, id_manager, register_largest_as_staff
 from heatmap import HeatmapGenerator
 from logger import DataLogger
-import reid
 
 def main():
     # ============ 入力ソースの選択 ============
@@ -62,7 +61,7 @@ def main():
             capture_time = time.perf_counter()
 
             # 3. filter.py の処理結果をフレームに重ねる
-            annotated_frame, results = process_frame(model, frame, heatmap_generator, data_logger, conf_threshold=0.6, show_heatmap=show_heatmap)
+            annotated_frame, results = process_frame(model, frame, heatmap_generator, data_logger, show_heatmap=show_heatmap)
 
             display_time = time.perf_counter()
             processing_ms = (display_time - capture_time) * 1000.0
@@ -103,30 +102,9 @@ def main():
 
             elif key == ord('s'):
                 print("🔍 スタッフの特徴量を保存中...")
-                max_area = 0
-                best_crop = None
-
-                staff_results = model(frame, verbose=False)
-                if staff_results[0].boxes is not None:
-                    for box, cls in zip(staff_results[0].boxes.xyxy.cpu().numpy(), staff_results[0].boxes.cls.cpu().numpy()):
-                        if int(cls) == 0:
-                            x0, y0, x1, y1 = map(int, box)
-                            area = (x1 - x0) * (y1 - y0)
-
-                            if area > max_area:
-                                max_area = area
-                                best_crop = frame[y0:y1, x0:x1]
-                
-                if best_crop is not None and best_crop.shape[0] > 0 and best_crop.shape[1] > 10:
-                    new_staff_feat = reid.get_feature(best_crop)
-                    if hasattr(id_manager, 'staff_features'):
-                        staff_dict = id_manager.staff_features
-                    else:
-                        staff_dict = id_manager.staff_features
-                    new_staff_id = f"S{len(staff_dict):03d}"
-                    staff_dict[new_staff_id] = new_staff_feat
-
-                    id_manager.save_features()
+                # 追跡中で最も大きく映っている人物を、track_id ごと登録する
+                new_staff_id = register_largest_as_staff(frame, results)
+                if new_staff_id:
                     print(f"✅ スタッフID {new_staff_id} の特徴量を保存しました。")
 
                     flash_frame = overlay.copy()

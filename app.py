@@ -63,7 +63,8 @@ if not df.empty:
 
         # 1. 総来場者数（ユニークなReal_IDの数）
         visitors_count = filtered_df['Real_ID'].nunique()
-        col1.metric("総来場者数", f"{visitors_count} 人")
+        count_label = "総来場者数" if target == "来場者（高校生）のみ" else "ユニーク人数"
+        col1.metric(count_label, f"{visitors_count} 人")
 
         # 🌟 ポイント3: 「1人あたりの平均カメラ内滞在時間」
         # まず人(Real_ID)ごとに合計滞在時間を算出し、その平均を取る
