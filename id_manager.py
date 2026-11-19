@@ -1,7 +1,9 @@
+from collections import defaultdict
 from dataclasses import dataclass
 import os
 import time
 import torch
+import torch.nn.functional as F
 
 import reid
 
@@ -27,7 +29,8 @@ class IDManager:
         self.WAIT_FRAMES = 5 
 
         # 🎯 照合確定後、追跡継続中にプールへ姿を追加する間隔（フレーム数）
-        self.POOL_UPDATE_INTERVAL = 15
+        # 30fps で約1秒。15（約0.5秒）では似すぎた姿が多く、多様性フィルターで捨てられる抽出が多かったため広げた
+        self.POOL_UPDATE_INTERVAL = 30
 
         self.timeout_seconds = timeout_seconds
         self.visitor_path = visitor_path
@@ -43,7 +46,10 @@ class IDManager:
         self.track_age = {}
         self.confirmed_tracks = {}  # { track_id: (status, score) } 照合済みのトラック
         self.next_real_id = 1
-    
+
+        # 計測用（filter.py の PROFILE が読み出してリセットする）。秒数と回数を足し込む
+        self.prof = defaultdict(float)
+
         self.load_features()
 
     def _generate_real_id(self):
@@ -124,18 +130,36 @@ class IDManager:
         self.save_features()
         return new_staff_id
 
-    # --- 🌟 NEW: プール内総当たり検索メソッド ---
+    # --- 🌟 プール内総当たり検索（テンソル化版） ---
     def _find_best_match(self, query_feat, pool_dict):
-        """辞書の中の「すべての姿」と総当たり戦を行い、最高スコアを返す"""
-        best_id = None
-        best_score = 0.0
+        """辞書の中の「すべての姿」と総当たりで照合し、(最も似ている人物ID, その類似度) を返す
+
+        以前は 1件ずつ compare_features() を呼び、そのたびに .item() で GPU の計算完了を待っていたため、
+        保存している特徴量の数に比例して遅くなっていた。
+        ここでは全特徴量を1つの行列 [N, 512] にまとめ、1回の計算で N 件の類似度を出す。
+        計算式は compare_features() と同じ cosine_similarity なので、結果（選ばれるID）は変わらない。
+        """
+        ids, feats = [], []
         for person_id, feature_list in pool_dict.items():
             for stored_feat in feature_list:
-                score = reid.compare_features(query_feat, stored_feat)
-                if score > best_score:
-                    best_score = score
-                    best_id = person_id
-        return best_id, best_score
+                ids.append(person_id)
+                feats.append(stored_feat)
+        if not feats:
+            return None, 0.0
+
+        t0 = time.perf_counter()
+        device = query_feat.device
+        gallery = torch.stack([f.to(device) for f in feats])                      # [N, 512]
+        scores = F.cosine_similarity(gallery, query_feat.unsqueeze(0), dim=1)     # [N]
+
+        best_idx = int(torch.argmax(scores))    # 同点なら先頭（以前の実装と同じ）
+        best_score = float(scores[best_idx])    # GPU との同期はここで1回だけ
+        self.prof["match_sec"] += time.perf_counter() - t0
+        self.prof["match_n"] += 1
+        # 以前の実装は「0.0 より大きいものだけ採用」だったので、それに合わせる
+        if best_score <= 0.0:
+            return None, 0.0
+        return ids[best_idx], best_score
 
     def _add_to_pool(self, real_id, feature, score):
         """多様性フィルターを通った特徴量をプールに追加する"""
@@ -153,7 +177,11 @@ class IDManager:
 
     def _extract(self, crop_img):
         if crop_img is not None and crop_img.shape[0] > 0 and crop_img.shape[1] > 10:
-            return reid.get_feature(crop_img)
+            t0 = time.perf_counter()
+            feature = reid.get_feature(crop_img)
+            self.prof["extract_sec"] += time.perf_counter() - t0
+            self.prof["extract_n"] += 1
+            return feature
         return None
 
     def resolve(self, track_id, crop_img, live_track_ids=()):
@@ -178,7 +206,8 @@ class IDManager:
         # 🌟 照合済みのトラック：ByteTrack を信頼して照合せず、一定間隔でプールに姿を追加するだけ
         if track_id in self.confirmed_tracks:
             status, score = self.confirmed_tracks[track_id]
-            if (self.track_age[track_id] - self.WAIT_FRAMES) % self.POOL_UPDATE_INTERVAL == 0:
+            # track_id を足して、人ごとに抽出するフレームをずらす（同時に入った人の抽出が同じフレームに重ならないように）
+            if (self.track_age[track_id] - self.WAIT_FRAMES + track_id) % self.POOL_UPDATE_INTERVAL == 0:
                 pool = self.staff_features.get(real_id) or self.active_visitors.get(real_id)
                 feature = self._extract(crop_img)
                 if pool and feature is not None:

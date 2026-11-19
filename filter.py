@@ -1,3 +1,6 @@
+import time
+from collections import defaultdict
+
 import cv2
 
 import reid
@@ -11,17 +14,59 @@ def adjust_contrast_brightness(img, contrast=1.0, brightness=0):
     return cv2.convertScaleAbs(img, alpha=contrast, beta=brightness)
 
 
+# 区間ごとの処理時間を測る（True のとき、PROFILE_EVERY フレームごとに平均をターミナルに出す）
+PROFILE = True
+PROFILE_EVERY = 300
+_prof_sum = defaultdict(float)
+_prof_count = 0
+_prof_max = 0.0
+_prof_persons = 0
+
+
+def _prof_report(times, n_persons):
+    """1フレーム分の区間時間を足し込み、PROFILE_EVERY フレームごとに平均[ms]を表示する"""
+    global _prof_count, _prof_persons
+    global _prof_max
+    for k, v in times.items():
+        _prof_sum[k] += v
+    _prof_persons += n_persons
+    total = sum(times.values())
+    _prof_max = max(_prof_max, total)
+    _prof_count += 1
+    if _prof_count >= PROFILE_EVERY:
+        avg = {k: v / _prof_count * 1000 for k, v in _prof_sum.items()}
+        # 平均だけだと一瞬の引っかかりが見えないので、合計の最大値も出す
+        print("⏱ [profile] " + " | ".join(f"{k}: {v:.1f}ms" for k, v in avg.items())
+              + f" | total: {sum(avg.values()):.1f}ms | total_max: {_prof_max * 1000:.1f}ms")
+        # reid の内訳: OSNet の特徴量抽出と照合（_find_best_match）。回数は区間全体の合計
+        p = id_manager.prof
+        ext_ms = p["extract_sec"] / p["extract_n"] * 1000 if p["extract_n"] else 0.0
+        match_ms = p["match_sec"] / p["match_n"] * 1000 if p["match_n"] else 0.0
+        pool_feats = sum(len(v) for v in id_manager.active_visitors.values())
+        print(f"   └ 人数/フレーム: {_prof_persons / _prof_count:.2f} | "
+              f"抽出: {int(p['extract_n'])}回 × {ext_ms:.2f}ms | 照合: {int(p['match_n'])}回 × {match_ms:.2f}ms | "
+              f"来場者プール: {len(id_manager.active_visitors)}人 / {pool_feats}特徴量")
+        p.clear()
+        _prof_persons = 0
+        _prof_sum.clear()
+        _prof_count = 0
+        _prof_max = 0.0
+
+
 id_manager = IDManager()
 zone_analytics = ZoneAnalytics()
 visualizer = Visualizer()
 
 def process_frame(model, img, heatmap_generator, data_logger, show_heatmap=True):
     """1フレームの画像を受け取り、追跡（トラッキング）と描画を行う"""
+    t = {"yolo+track": 0.0, "reid": 0.0, "zone": 0.0, "heatmap": 0.0, "draw": 0.0}
+    t0 = time.perf_counter()
     source_img = adjust_contrast_brightness(img, contrast=1.0, brightness=0)
 
     # 【魔法の1行】ただの推論ではなく、trackモードでByteTrack（ID追跡）を有効にする
     # conf は ByteTrack 第2段（track_low_thresh）に合わせる。追跡開始の閾値は bytetrack.yaml 側で管理
     results = model.track(source_img, conf=0.1, classes=[0], persist=True, tracker="bytetrack.yaml", verbose=False)
+    t["yolo+track"] = time.perf_counter() - t0
     processed_results = []
     current_foot_positions = []  # 現在のフレームでの足の位置を保存するリスト
     raw_tracks = []
@@ -43,7 +88,9 @@ def process_frame(model, img, heatmap_generator, data_logger, show_heatmap=True)
             crop_img = source_img[crop_y0:crop_y1, crop_x0:crop_x1]
 
             # 🌟 IDマネージャーの判定（新ロジック）を実行！
+            t1 = time.perf_counter()
             id_result = id_manager.resolve(track_id, crop_img, live_track_ids)
+            t["reid"] += time.perf_counter() - t1
             
             foot_x = int((x0 + x1) / 2)
             foot_y = int(y1)
@@ -65,9 +112,17 @@ def process_frame(model, img, heatmap_generator, data_logger, show_heatmap=True)
             })
 
     # ここで raw_tracks を zone_analytics に渡す。この中で logger に命令が飛ぶ！
+    t1 = time.perf_counter()
     annotated_tracks, booths = zone_analytics.update(raw_tracks, source_img.shape, data_logger)
+    t2 = time.perf_counter()
     annotated_img = heatmap_generator.apply(source_img, current_foot_positions, show=show_heatmap)
+    t3 = time.perf_counter()
     annotated_img = visualizer.draw(annotated_img, booths, annotated_tracks)
+    t4 = time.perf_counter()
+    t["zone"], t["heatmap"], t["draw"] = t2 - t1, t3 - t2, t4 - t3
+
+    if PROFILE:
+        _prof_report(t, len(raw_tracks))
 
     return annotated_img, processed_results
 

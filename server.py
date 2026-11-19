@@ -135,7 +135,7 @@ async def generate_frames(request: Request):
     global latest_raw_frame, trigger_register
     global show_heatmap_state, show_metrics_state
     
-    model = YOLO("yolo26n.pt")
+    model = YOLO("yolo26s.pt")
     heatmap_generator = HeatmapGenerator()
     data_logger = DataLogger()
 
