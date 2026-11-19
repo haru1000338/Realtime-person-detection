@@ -29,13 +29,16 @@ import numpy as np
 # ============================================================
 
 EXPERIMENT_ID = "lab-video-1106__yolo26-model-size__2026-11-19"
-VIDEO_PATH = f"tests/20261105_102542.avi"  # 入力動画のパス（tests/<実験ID>/input/ に置く想定）
+VIDEO_PATH = f"tests/{EXPERIMENT_ID}/input/video.mp4"
 
 # 調べる設定名（eval_tracking.py の CONFIGS の name）
 CONFIG_NAMES = ["yolo26n-c010-h060-n060", "yolo26s-c010-h060-n060"]
 
 # eval_tracking.py を実行した日付（フレームごとのCSVのファイル名に入っている）
 RUN_DATE = "2026-11-19"
+
+# eval_tracking.py の START_SECONDS と同じ値にする（フレーム番号の起点を合わせるため）
+START_SECONDS = 0
 
 # 一覧画像に載せるトラックの最大数（長い順）
 MAX_TRACKS_IN_SHEET = 60
@@ -102,6 +105,9 @@ def read_frames(frame_ids):
     last = max(wanted)
     frames = {}
     cap = cv2.VideoCapture(VIDEO_PATH)
+    if START_SECONDS:
+        fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+        cap.set(cv2.CAP_PROP_POS_FRAMES, int(START_SECONDS * fps))
     idx = 0
     while idx <= last:
         ok, img = cap.read()

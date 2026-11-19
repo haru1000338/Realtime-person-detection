@@ -39,12 +39,16 @@ import numpy as np
 EXPERIMENT_ID = "lab-video-1106__yolo26-model-size__2026-11-19"
 
 # 入力動画（tests/<実験ID>/input/ に置く想定）
-VIDEO_PATH = f"tests/20261105_102542.avi"
+VIDEO_PATH = f"tests/{EXPERIMENT_ID}/input/video.mp4"
 
 # CONFIGS で weights を省略したときに使う YOLO の重み（本番と同じ）
 YOLO_WEIGHTS = "yolo26n.pt"
 
-# 動画の先頭から何秒だけ使うか（None なら最後まで）。動作確認のときは 30 などにすると早い
+# 動画の何秒目から使うか（0 なら先頭から）。長い録画から人が多い時間帯だけを切り出すときに使う
+START_SECONDS = 0
+
+# START_SECONDS から何秒だけ使うか（None なら最後まで）。動作確認のときは 30 などにすると早い
+# ※ 出力CSVの frame 列は START_SECONDS を 0 とした番号になる
 MAX_SECONDS = None
 
 # 比較する設定。name は出力ファイル名に使う（単語内の区切りは "-"）
@@ -101,8 +105,10 @@ def open_video():
 
 
 def iter_frames():
-    """(フレーム番号, 画像) を順に返す。MAX_SECONDS で打ち切る"""
-    cap, _, _, max_frames = open_video()
+    """(フレーム番号, 画像) を順に返す。START_SECONDS から始め、MAX_SECONDS で打ち切る"""
+    cap, fps, _, max_frames = open_video()
+    if START_SECONDS:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, int(START_SECONDS * fps))
     idx = 0
     while True:
         ok, frame = cap.read()
@@ -273,7 +279,7 @@ def save_score_hists(hists):
 def main():
     os.makedirs(RESULT_DIR, exist_ok=True)
     _, fps, width, _ = open_video()
-    print(f"動画: {VIDEO_PATH}  fps={fps:.2f}  幅={width}px")
+    print(f"動画: {VIDEO_PATH}  fps={fps:.2f}  幅={width}px  開始={START_SECONDS}秒  長さ={MAX_SECONDS or '最後まで'}秒")
 
     hists = {}
     for weights in dict.fromkeys(weights_of(c) for c in CONFIGS):
